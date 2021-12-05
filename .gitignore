@@ -1,5 +1,7 @@
 # Currently only using the Flutter stable version.
 .fvm/ 
+*.freezed.dart
+*.g.dart
 
 # Miscellaneous
 *.class
