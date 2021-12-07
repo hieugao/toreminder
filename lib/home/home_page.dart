@@ -2,15 +2,16 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 // import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:lottie/lottie.dart';
-import 'package:notion_capture/home/bookmark_section.dart';
-import 'package:notion_capture/create_note/repository.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 
 import '../common/constants.dart';
 import '../common/utils.dart';
 import '../create_note/models.dart';
+import '../create_note/repository.dart';
+import './bookmark_section.dart';
 import './repository.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -59,20 +60,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.grey[850],
-        // title: Text(widget.title),
+        title: Text(
+          'Notes',
+          style: Theme.of(context).textTheme.headline6,
+        ),
       ),
       body: _notes.isEmpty
           ? const Center(child: _EmptyNotesIllustration())
-          : Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Flexible(
-                    flex: 50,
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    constraints: BoxConstraints(maxHeight: height * 0.5),
                     child: ListView.builder(
+                      shrinkWrap: true,
                       itemCount: _notes.length,
                       itemBuilder: (context, index) {
                         // final note = snapshot.data![index];
@@ -91,40 +101,18 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         );
                       },
-                    )
-
-                    // child: FutureBuilder<List<Note>>(
-                    //   future: _futureNotes,
-                    //   builder: (context, snapshot) {
-                    //     if (snapshot.hasData) {
-                    //       // return Text(snapshot.data!.title);
-                    //       // return const _EmptyNotesIllustration();
-                    //       if (snapshot.data != null && snapshot.data!.isEmpty) {
-                    //         return const _EmptyNotesIllustration();
-                    //       }
-
-                    //       return ListView.builder(
-                    //           itemCount: snapshot.data?.length ?? 0,
-                    //           itemBuilder: (context, index) {
-                    //             final note = snapshot.data![index];
-
-                    //             return _NoteCard(
-                    //               note: note,
-                    //               onTap: () {},
-                    //             );
-                    //           });
-                    //     } else if (snapshot.hasError) {
-                    //       return Text('${snapshot.error}');
-                    //     }
-
-                    //     // By default, show a loading spinner.
-                    //     return const CircularProgressIndicator();
-                    //   },
-                    // ),
                     ),
-                const Spacer(),
-                const Flexible(flex: 45, child: BookmarkSection()),
-              ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6.0, top: 12.0, bottom: 8.0),
+                    child: Text(
+                      'Bookmarks',
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
+                  ),
+                  const Expanded(child: BookmarkSection()),
+                ],
+              ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
@@ -161,32 +149,25 @@ class _NoteCard extends StatelessWidget {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _CategoriesBlock(categories: note.categories),
+                  Flexible(flex: 5, child: _CategoriesBlock(categories: note.categories)),
                   Text(
                     timeago.format(note.createdAt),
                     style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
                   ),
-                  const SizedBox(width: 4),
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: note.isSynced ? Colors.green : Colors.red,
-                    ),
-                  )
                 ],
               ),
+              const SizedBox(height: 8),
+              Text(note.title),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  _LabelsBlock(type: note.type, dueString: note.dueString, priority: note.priority),
+                  const SizedBox(width: 8),
                   Flexible(
                     child: Column(children: [
-                      Text(note.title),
-                      const SizedBox(height: 8),
                       note.body.isEmpty
                           ? Text(
                               note.body,
@@ -197,9 +178,6 @@ class _NoteCard extends StatelessWidget {
                           : Container(),
                     ]),
                   ),
-                  const SizedBox(width: 8),
-                  _ArrangementBlock(
-                      type: note.type, dueString: note.dueString, priority: note.priority)
                 ],
               ),
             ],
@@ -233,113 +211,6 @@ class _NoteCard extends StatelessWidget {
       // ),
     );
   }
-
-  // String _tagName(String string) {
-  //   if (string.length > 12 && string.length > 2) {
-  //     return string.substring(0, 12) + '...';
-  //   } else {
-  //     return string;
-  //   }
-  // }
-
-  // String _titleText(String string) {
-  //   if (['', null].contains(string)) {
-  //     return _contentText(note.content!);
-  //   } else {
-  //     if (string.split(' ').length > 10) {
-  //       return CantonMethods.addDotsToString(note.title!, 10);
-  //     } else {
-  //       return string;
-  //     }
-  //   }
-  // }
-
-  // String _contentText(String string) {
-  //   if (note.content!.split(' ').length > 10) {
-  //     return CantonMethods.addDotsToString(note.content!, 10);
-  //   } else {
-  //     if (!(note.content! == '')) {
-  //       return note.content!;
-  //     } else {
-  //       return 'No additional text';
-  //     }
-  //   }
-  // }
-
-  // Widget _body(BuildContext context) {
-  //   // Creates tags on the note card.
-  //   List<Widget> _tags = [];
-
-  //   for (var tag in note.tags!) {
-  //     _tags.add(
-  //       Card(
-  //         color: Theme.of(context).primaryColor,
-  //         shape: SquircleBorder(radius: BorderRadius.circular(15)),
-  //         child: Padding(
-  //           padding: const EdgeInsets.all(4.0),
-  //           child: Text(
-  //             _tagName(tag.name!),
-  //             style: Theme.of(context).textTheme.bodyText2?.copyWith(color: CantonColors.white),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   if (_tags.length > 3) {
-  //     _tags.removeRange(3, _tags.length);
-  //     _tags.add(
-  //       Card(
-  //         color: Theme.of(context).primaryColor,
-  //         shape: SquircleBorder(radius: BorderRadius.circular(15)),
-  //         child: Padding(
-  //           padding: const EdgeInsets.all(4.0),
-  //           child: Text(
-  //             'more',
-  //             style: Theme.of(context).textTheme.bodyText2?.copyWith(color: CantonColors.white),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   return Row(
-  //     children: <Widget>[
-  //       [null, false].contains(note.pinned)
-  //           ? Container()
-  //           : Icon(
-  //               CupertinoIcons.pin_fill,
-  //               size: 15,
-  //               color: Theme.of(context).colorScheme.secondaryVariant,
-  //             ),
-  //       SizedBox(width: 7),
-  //       Expanded(
-  //         flex: 10,
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(_titleText(note.title!), style: Theme.of(context).textTheme.headline6!),
-  //             const SizedBox(height: 7),
-  //             note.tags!.length > 0
-  //                 ? Row(
-  //                     children: _tags,
-  //                   )
-  //                 : Container(),
-  //             note.tags!.length > 0 ? const SizedBox(height: 7) : Container(),
-  //             Text(_contentText(note.content!), style: Theme.of(context).textTheme.bodyText1!),
-  //           ],
-  //         ),
-  //       ),
-  //       Spacer(),
-  //       Text(
-  //         ListNote.dateTimeString(note.lastEditDate!).substring(6),
-  //         textAlign: TextAlign.right,
-  //         style: Theme.of(context).textTheme.bodyText2!.copyWith(color: CantonColors.textTertiary),
-  //       ),
-  //     ],
-  //   );
-  // }
-
 }
 
 class _CategoriesBlock extends StatelessWidget {
@@ -362,18 +233,18 @@ class _CategoriesBlock extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      // color: Theme.of(context).colorScheme.secondary,
-                      color: Colors.grey[700],
+                      borderRadius: BorderRadius.circular(6),
+                      color: categories[0].color.toColor(),
                     ),
                     child: Text(
-                      categories[0].content,
-                      style: Theme.of(context).textTheme.bodyText2,
+                      categories[0].emoji,
+                      style: Theme.of(context).textTheme.caption!.copyWith(fontSize: 10),
                     ),
                   ),
                 ),
+                const TextSpan(text: '  '),
                 for (var i = 0; i < categories.length; i++)
-                  ...getCategoryWidget(context, categories[i], i == categories.length - 1),
+                  ..._buildCategoryWidget(context, categories[i], i == categories.length - 1),
               ],
             ),
             // text: WidgetSpan(
@@ -384,54 +255,77 @@ class _CategoriesBlock extends StatelessWidget {
         : const SizedBox();
   }
 
-  List<TextSpan> getCategoryWidget(BuildContext context, NotionTag category,
+  List<TextSpan> _buildCategoryWidget(BuildContext context, NotionTag category,
       [bool isLast = false]) {
     return [
       TextSpan(
         text: ' ' + category.content,
-        // style: Theme.of(context).textTheme.caption!.apply(color: category.color),
+        style: Theme.of(context).textTheme.caption,
       ),
       !isLast
           ? TextSpan(
-              text: ',',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText2!
-                  .apply(color: Theme.of(context).disabledColor),
-            )
+              text: ',', style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white))
           : const TextSpan(text: ''),
     ];
   }
 }
 
-class _ArrangementBlock extends StatelessWidget {
-  const _ArrangementBlock({
+class _LabelsBlock extends StatelessWidget {
+  const _LabelsBlock({
     Key? key,
-    this.type,
     this.dueString,
     this.priority,
+    this.type,
   }) : super(key: key);
 
-  final NotionTag? type;
   final NotionTag? dueString;
   final NotionTag? priority;
+  final NotionTag? type;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[700],
-      ),
-      child: Column(
-        children: [
-          Text(type?.content ?? '', style: Theme.of(context).textTheme.caption!),
-          Text(dueString?.content ?? '', style: Theme.of(context).textTheme.caption!),
-          Text(priority?.content ?? '', style: Theme.of(context).textTheme.caption!),
-        ],
+    return DottedBorder(
+      color: Colors.black,
+      strokeWidth: 1,
+      borderType: BorderType.RRect,
+      radius: const Radius.circular(12),
+      padding: EdgeInsets.all(6),
+      child: ClipRRect(
+        // borderRadius: BorderRadius.all(Radius.circular(12)),
+        child: Container(
+          // padding: const EdgeInsets.all(4),
+          // decoration: BoxDecoration(
+          //   borderRadius: BorderRadius.circular(12),
+          //   color: Colors.grey[700],
+          // ),
+          child: Row(
+            children: [
+              Text('Labels: ',
+                  style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38)),
+              ..._buildLabel(context, dueString),
+              ..._buildLabel(context, priority),
+              ..._buildLabel(context, type),
+              // const SizedBox(width: 4),
+              // Text(type?.emoji ?? '', style: Theme.of(context).textTheme.caption!),
+              // const SizedBox(width: 2),
+              // Text(dueString?.emoji ?? '', style: Theme.of(context).textTheme.caption!),
+              // const SizedBox(width: 2),
+              // Text(priority?.content ?? '', style: Theme.of(context).textTheme.caption!),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  List<Widget> _buildLabel(BuildContext context, NotionTag? label) {
+    if (label != null) {
+      return [
+        const SizedBox(width: 2),
+        Text(type?.emoji ?? '', style: Theme.of(context).textTheme.caption!),
+      ];
+    }
+    return [const SizedBox()];
   }
 }
 

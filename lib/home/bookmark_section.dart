@@ -15,6 +15,7 @@ class BookmarkSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StaggeredGridView.countBuilder(
+      shrinkWrap: true,
       itemCount: _bookmarks.length,
       primary: false,
       crossAxisCount: 4,
@@ -45,9 +46,9 @@ class _Tile extends StatelessWidget {
           children: <Widget>[
             Text(
               bookmark.title,
-              style: Theme.of(context).textTheme.bodyText2!.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.bodyText2,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: FadeInImage.memoryNetwork(
