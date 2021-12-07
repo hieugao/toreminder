@@ -4,10 +4,12 @@ import 'dart:ui' as ui;
 // import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:lottie/lottie.dart';
 import 'package:notion_capture/home/bookmark_section.dart';
+import 'package:notion_capture/create_note/repository.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 
 import '../common/constants.dart';
+import '../common/utils.dart';
 import '../create_note/models.dart';
 import './repository.dart';
 
@@ -37,10 +39,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _awaitReturnValueFromSecondScreen() async {
-    final result = await Navigator.pushNamed(context, Routes.createNote);
-    // Navigator.pushNamed(context, Routes.createNote),
-    setState(() => _notes.add(result as Note));
-    HomeRepository.saveNotes(_notes);
+    var result = await Navigator.pushNamed(context, Routes.createNote) as Note;
+
+    try {
+      if (await hasNetwork()) {
+        final successfullyCreated = await CreateNoteRepository.createNotionPage(result);
+
+        if (successfullyCreated) {
+          result = result.copyWith(isSynced: true);
+        }
+      }
+    } catch (e) {
+      throw ('Printing out the message: $e');
+    } finally {
+      setState(() => _notes.add(result));
+      HomeRepository.saveNotes(_notes);
+    }
   }
 
   @override
@@ -149,11 +163,20 @@ class _NoteCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _CategoriesBlock(categories: note.categories ?? []),
+                  _CategoriesBlock(categories: note.categories),
                   Text(
                     timeago.format(note.createdAt),
                     style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
                   ),
+                  const SizedBox(width: 4),
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: note.isSynced ? Colors.green : Colors.red,
+                    ),
+                  )
                 ],
               ),
               const SizedBox(height: 8),
@@ -164,9 +187,9 @@ class _NoteCard extends StatelessWidget {
                     child: Column(children: [
                       Text(note.title),
                       const SizedBox(height: 8),
-                      note.body != null
+                      note.body.isEmpty
                           ? Text(
-                              note.body!,
+                              note.body,
                               overflow: TextOverflow.ellipsis,
                               style:
                                   Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
