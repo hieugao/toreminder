@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 // import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:lottie/lottie.dart';
+import 'package:notion_capture/home/bookmark_section.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 
@@ -56,26 +57,27 @@ class _MyHomePageState extends State<MyHomePage> {
               // mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Flexible(
-                    flex: 45,
+                    flex: 50,
                     child: ListView.builder(
-                        itemCount: _notes.length,
-                        itemBuilder: (context, index) {
-                          // final note = snapshot.data![index];
+                      itemCount: _notes.length,
+                      itemBuilder: (context, index) {
+                        // final note = snapshot.data![index];
 
-                          return Dismissible(
-                            key: Key(_notes[index].id.toString()),
-                            onDismissed: (direction) {
-                              setState(() {
-                                _notes.removeAt(index);
-                              });
-                              HomeRepository.saveNotes(_notes);
-                            },
-                            child: _NoteCard(
-                              note: _notes[index],
-                              onTap: () {},
-                            ),
-                          );
-                        })
+                        return Dismissible(
+                          key: Key(_notes[index].id.toString()),
+                          onDismissed: (direction) {
+                            setState(() {
+                              _notes.removeAt(index);
+                            });
+                            HomeRepository.saveNotes(_notes);
+                          },
+                          child: _NoteCard(
+                            note: _notes[index],
+                            onTap: () {},
+                          ),
+                        );
+                      },
+                    )
 
                     // child: FutureBuilder<List<Note>>(
                     //   future: _futureNotes,
@@ -106,6 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     //   },
                     // ),
                     ),
+                const Spacer(),
+                const Flexible(flex: 45, child: BookmarkSection()),
               ],
             ),
       floatingActionButton: FloatingActionButton(
