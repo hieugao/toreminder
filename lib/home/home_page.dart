@@ -2,12 +2,17 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 // import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:lottie/lottie.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 
 import '../common/constants.dart';
+import '../common/utils.dart';
 import '../create_note/models.dart';
+import '../create_note/repository.dart';
+import './bookmark_section.dart';
 import './repository.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -19,99 +24,206 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final Future<List<Note>> _futureNotes;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  bool _isSyncing = false;
   List<Note> _notes = [];
 
   @override
   void initState() {
     super.initState();
-    _initData();
+    _init();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
+      setState(() => _connectionStatus = result);
+      _syncNotes(result);
+    });
   }
 
-  Future<void> _initData() async {
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> _init() async {
     // _futureNotes = _NoteRepository.getNotes();
     _futureNotes = HomeRepository.getNotes();
-    final notes = await _futureNotes;
+    final noteList = await _futureNotes;
 
-    setState(() => _notes = notes);
+    setState(() => _notes = noteList);
+  }
+
+  Future<void> _syncNotes(ConnectivityResult result) async {
+    // final ConnectivityResult result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
+      setState(() => _isSyncing = true);
+
+      for (var i = 0; i < _notes.length; i++) {
+        if (!_notes[i].isSynced) {
+          try {
+            final isCreated = await CreateNoteRepository.createNotionPage(_notes[i]);
+
+            if (isCreated) {
+              setState(() => _notes[i] = _notes[i].copyWith(isSynced: true));
+              HomeRepository.saveNotes(_notes);
+            }
+          } catch (e) {
+            // TODO: Handle error, unsynced note, logging?
+            print(e);
+            continue;
+          }
+        }
+      }
+
+      setState(() => _isSyncing = false);
+    }
+
+    HomeRepository.saveNotes(_notes);
   }
 
   void _awaitReturnValueFromSecondScreen() async {
-    final result = await Navigator.pushNamed(context, Routes.createNote);
-    // Navigator.pushNamed(context, Routes.createNote),
-    setState(() => _notes.add(result as Note));
-    HomeRepository.saveNotes(_notes);
+    var result = await Navigator.pushNamed(context, Routes.createNote) as Note;
+
+    try {
+      if (await hasNetwork()) {
+        final successfullyCreated = await CreateNoteRepository.createNotionPage(result);
+
+        if (successfullyCreated) {
+          result = result.copyWith(isSynced: true);
+        }
+      }
+    } catch (e) {
+      throw ('Printing out the message: $e');
+    } finally {
+      setState(() => _notes.add(result));
+      HomeRepository.saveNotes(_notes);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.grey[850],
-        // title: Text(widget.title),
+        title: Text(
+          'Notes',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+        actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: _SyncIndicator(
+                  notes: _notes, connectionStatus: _connectionStatus, isSyncing: _isSyncing),
+            ),
+          )
+        ],
       ),
       body: _notes.isEmpty
           ? const Center(child: _EmptyNotesIllustration())
-          : Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Flexible(
-                    flex: 45,
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    constraints: BoxConstraints(maxHeight: height * 0.5),
                     child: ListView.builder(
-                        itemCount: _notes.length,
-                        itemBuilder: (context, index) {
-                          // final note = snapshot.data![index];
+                      shrinkWrap: true,
+                      itemCount: _notes.length,
+                      itemBuilder: (context, index) {
+                        // final note = snapshot.data![index];
 
-                          return Dismissible(
-                            key: Key(_notes[index].id.toString()),
-                            onDismissed: (direction) {
-                              setState(() {
-                                _notes.removeAt(index);
-                              });
-                              HomeRepository.saveNotes(_notes);
-                            },
-                            child: _NoteCard(
-                              note: _notes[index],
-                              onTap: () {},
-                            ),
-                          );
-                        })
-
-                    // child: FutureBuilder<List<Note>>(
-                    //   future: _futureNotes,
-                    //   builder: (context, snapshot) {
-                    //     if (snapshot.hasData) {
-                    //       // return Text(snapshot.data!.title);
-                    //       // return const _EmptyNotesIllustration();
-                    //       if (snapshot.data != null && snapshot.data!.isEmpty) {
-                    //         return const _EmptyNotesIllustration();
-                    //       }
-
-                    //       return ListView.builder(
-                    //           itemCount: snapshot.data?.length ?? 0,
-                    //           itemBuilder: (context, index) {
-                    //             final note = snapshot.data![index];
-
-                    //             return _NoteCard(
-                    //               note: note,
-                    //               onTap: () {},
-                    //             );
-                    //           });
-                    //     } else if (snapshot.hasError) {
-                    //       return Text('${snapshot.error}');
-                    //     }
-
-                    //     // By default, show a loading spinner.
-                    //     return const CircularProgressIndicator();
-                    //   },
-                    // ),
+                        return Dismissible(
+                          key: Key(_notes[index].id.toString()),
+                          onDismissed: (direction) {
+                            setState(() {
+                              _notes.removeAt(index);
+                            });
+                            HomeRepository.saveNotes(_notes);
+                          },
+                          child: _NoteCard(
+                            note: _notes[index],
+                            onTap: () {},
+                          ),
+                        );
+                      },
                     ),
-              ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6.0, top: 12.0, bottom: 8.0),
+                    child: Text(
+                      'Bookmarks',
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
+                  ),
+                  const Expanded(child: BookmarkSection()),
+                ],
+              ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
             _awaitReturnValueFromSecondScreen(), // Navigator.pushNamed(context, Routes.createNote),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class _SyncIndicator extends StatelessWidget {
+  const _SyncIndicator({
+    Key? key,
+    required this.notes,
+    required this.connectionStatus,
+    this.isSyncing = false,
+  }) : super(key: key);
+
+  final List<Note> notes;
+  final ConnectivityResult connectionStatus;
+  final bool isSyncing;
+
+  @override
+  Widget build(BuildContext context) {
+    final unSyncNumber = notes.where((note) => !note.isSynced).length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.grey[700],
+      ),
+      child: Row(
+        children: [
+          _buildSyncDot(),
+          const SizedBox(width: 6),
+          Text(
+              connectionStatus == ConnectivityResult.none
+                  ? 'Unsynced ($unSyncNumber)'
+                  : isSyncing
+                      ? 'Syncing... ($unSyncNumber)'
+                      : 'Synced',
+              style: Theme.of(context).textTheme.caption),
+        ],
+      ),
+    );
+    return Container();
+  }
+
+  Widget _buildSyncDot() {
+    return Container(
+      width: 5,
+      height: 5,
+      decoration: BoxDecoration(
+        color: connectionStatus == ConnectivityResult.none
+            ? Colors.red
+            : isSyncing
+                ? Colors.yellow
+                : Colors.green,
+        shape: BoxShape.circle,
       ),
     );
   }
@@ -132,50 +244,71 @@ class _NoteCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
         elevation: 4,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _CategoriesBlock(categories: note.categories ?? []),
-                  Text(
-                    timeago.format(note.createdAt),
-                    style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Column(children: [
-                      Text(note.title),
-                      const SizedBox(height: 8),
-                      note.body != null
-                          ? Text(
-                              note.body!,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
-                            )
-                          : Container(),
-                    ]),
-                  ),
-                  const SizedBox(width: 8),
-                  _ArrangementBlock(
-                      type: note.type, dueString: note.dueString, priority: note.priority)
-                ],
-              ),
-            ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: DottedBorder(
+          strokeCap: StrokeCap.round,
+          // color: note.isSynced ? Colors.transparent : Colors.red[700]!.withOpacity(0.6),
+          color: Colors.transparent,
+          strokeWidth: 0,
+          // dashPattern: const [6, 6, 2, 6],
+          // dashPattern: const [0, 0, 0, 0],
+          borderType: BorderType.RRect,
+          radius: const Radius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(flex: 5, child: _CategoriesBlock(categories: note.categories)),
+                    Row(children: [
+                      Text(
+                        timeago.format(note.createdAt),
+                        style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: note.isSynced ? Colors.green : Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ])
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(note.title),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _LabelsBlock(
+                        type: note.type, dueString: note.dueString, priority: note.priority),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(children: [
+                        note.body.isEmpty
+                            ? Text(
+                                note.body,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption!
+                                    .apply(color: Colors.white38),
+                              )
+                            : Container(),
+                      ]),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -206,113 +339,6 @@ class _NoteCard extends StatelessWidget {
       // ),
     );
   }
-
-  // String _tagName(String string) {
-  //   if (string.length > 12 && string.length > 2) {
-  //     return string.substring(0, 12) + '...';
-  //   } else {
-  //     return string;
-  //   }
-  // }
-
-  // String _titleText(String string) {
-  //   if (['', null].contains(string)) {
-  //     return _contentText(note.content!);
-  //   } else {
-  //     if (string.split(' ').length > 10) {
-  //       return CantonMethods.addDotsToString(note.title!, 10);
-  //     } else {
-  //       return string;
-  //     }
-  //   }
-  // }
-
-  // String _contentText(String string) {
-  //   if (note.content!.split(' ').length > 10) {
-  //     return CantonMethods.addDotsToString(note.content!, 10);
-  //   } else {
-  //     if (!(note.content! == '')) {
-  //       return note.content!;
-  //     } else {
-  //       return 'No additional text';
-  //     }
-  //   }
-  // }
-
-  // Widget _body(BuildContext context) {
-  //   // Creates tags on the note card.
-  //   List<Widget> _tags = [];
-
-  //   for (var tag in note.tags!) {
-  //     _tags.add(
-  //       Card(
-  //         color: Theme.of(context).primaryColor,
-  //         shape: SquircleBorder(radius: BorderRadius.circular(15)),
-  //         child: Padding(
-  //           padding: const EdgeInsets.all(4.0),
-  //           child: Text(
-  //             _tagName(tag.name!),
-  //             style: Theme.of(context).textTheme.bodyText2?.copyWith(color: CantonColors.white),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   if (_tags.length > 3) {
-  //     _tags.removeRange(3, _tags.length);
-  //     _tags.add(
-  //       Card(
-  //         color: Theme.of(context).primaryColor,
-  //         shape: SquircleBorder(radius: BorderRadius.circular(15)),
-  //         child: Padding(
-  //           padding: const EdgeInsets.all(4.0),
-  //           child: Text(
-  //             'more',
-  //             style: Theme.of(context).textTheme.bodyText2?.copyWith(color: CantonColors.white),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   return Row(
-  //     children: <Widget>[
-  //       [null, false].contains(note.pinned)
-  //           ? Container()
-  //           : Icon(
-  //               CupertinoIcons.pin_fill,
-  //               size: 15,
-  //               color: Theme.of(context).colorScheme.secondaryVariant,
-  //             ),
-  //       SizedBox(width: 7),
-  //       Expanded(
-  //         flex: 10,
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(_titleText(note.title!), style: Theme.of(context).textTheme.headline6!),
-  //             const SizedBox(height: 7),
-  //             note.tags!.length > 0
-  //                 ? Row(
-  //                     children: _tags,
-  //                   )
-  //                 : Container(),
-  //             note.tags!.length > 0 ? const SizedBox(height: 7) : Container(),
-  //             Text(_contentText(note.content!), style: Theme.of(context).textTheme.bodyText1!),
-  //           ],
-  //         ),
-  //       ),
-  //       Spacer(),
-  //       Text(
-  //         ListNote.dateTimeString(note.lastEditDate!).substring(6),
-  //         textAlign: TextAlign.right,
-  //         style: Theme.of(context).textTheme.bodyText2!.copyWith(color: CantonColors.textTertiary),
-  //       ),
-  //     ],
-  //   );
-  // }
-
 }
 
 class _CategoriesBlock extends StatelessWidget {
@@ -335,18 +361,18 @@ class _CategoriesBlock extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      // color: Theme.of(context).colorScheme.secondary,
-                      color: Colors.grey[700],
+                      borderRadius: BorderRadius.circular(6),
+                      color: categories[0].color.toColor(),
                     ),
                     child: Text(
-                      categories[0].content,
-                      style: Theme.of(context).textTheme.bodyText2,
+                      categories[0].emoji,
+                      style: Theme.of(context).textTheme.caption!.copyWith(fontSize: 10),
                     ),
                   ),
                 ),
+                const TextSpan(text: '  '),
                 for (var i = 0; i < categories.length; i++)
-                  ...getCategoryWidget(context, categories[i], i == categories.length - 1),
+                  ..._buildCategoryWidget(context, categories[i], i == categories.length - 1),
               ],
             ),
             // text: WidgetSpan(
@@ -357,54 +383,77 @@ class _CategoriesBlock extends StatelessWidget {
         : const SizedBox();
   }
 
-  List<TextSpan> getCategoryWidget(BuildContext context, NotionTag category,
+  List<TextSpan> _buildCategoryWidget(BuildContext context, NotionTag category,
       [bool isLast = false]) {
     return [
       TextSpan(
         text: ' ' + category.content,
-        // style: Theme.of(context).textTheme.caption!.apply(color: category.color),
+        style: Theme.of(context).textTheme.caption,
       ),
       !isLast
           ? TextSpan(
-              text: ',',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText2!
-                  .apply(color: Theme.of(context).disabledColor),
-            )
+              text: ',', style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white))
           : const TextSpan(text: ''),
     ];
   }
 }
 
-class _ArrangementBlock extends StatelessWidget {
-  const _ArrangementBlock({
+class _LabelsBlock extends StatelessWidget {
+  const _LabelsBlock({
     Key? key,
-    this.type,
     this.dueString,
     this.priority,
+    this.type,
   }) : super(key: key);
 
-  final NotionTag? type;
   final NotionTag? dueString;
   final NotionTag? priority;
+  final NotionTag? type;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[700],
-      ),
-      child: Column(
-        children: [
-          Text(type?.content ?? '', style: Theme.of(context).textTheme.caption!),
-          Text(dueString?.content ?? '', style: Theme.of(context).textTheme.caption!),
-          Text(priority?.content ?? '', style: Theme.of(context).textTheme.caption!),
-        ],
+    return DottedBorder(
+      color: Colors.black,
+      strokeWidth: 1,
+      borderType: BorderType.RRect,
+      radius: const Radius.circular(12),
+      padding: EdgeInsets.all(6),
+      child: ClipRRect(
+        // borderRadius: BorderRadius.all(Radius.circular(12)),
+        child: Container(
+          // padding: const EdgeInsets.all(4),
+          // decoration: BoxDecoration(
+          //   borderRadius: BorderRadius.circular(12),
+          //   color: Colors.grey[700],
+          // ),
+          child: Row(
+            children: [
+              Text('Labels: ',
+                  style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38)),
+              ..._buildLabel(context, dueString),
+              ..._buildLabel(context, priority),
+              ..._buildLabel(context, type),
+              // const SizedBox(width: 4),
+              // Text(type?.emoji ?? '', style: Theme.of(context).textTheme.caption!),
+              // const SizedBox(width: 2),
+              // Text(dueString?.emoji ?? '', style: Theme.of(context).textTheme.caption!),
+              // const SizedBox(width: 2),
+              // Text(priority?.content ?? '', style: Theme.of(context).textTheme.caption!),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  List<Widget> _buildLabel(BuildContext context, NotionTag? label) {
+    if (label != null) {
+      return [
+        const SizedBox(width: 2),
+        Text(type?.emoji ?? '', style: Theme.of(context).textTheme.caption!),
+      ];
+    }
+    return [const SizedBox()];
   }
 }
 

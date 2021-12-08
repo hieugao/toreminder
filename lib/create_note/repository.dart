@@ -9,10 +9,11 @@ import './models.dart';
 
 class CreateNoteRepository {
   static const String _baseUrl = 'https://api.notion.com/v1/';
-  static const String _databaseUrl = 'databases/';
+  static const String _dbPath = 'databases/';
+  static const String _pagesPath = 'pages/';
 
   static Future<NotionDatabase> fetchDatabase() async {
-    final url = '$_baseUrl$_databaseUrl${dotenv.env['DB_ID']}';
+    final url = '$_baseUrl$_dbPath${dotenv.env['DB_ID']}';
 
     final response = await http.get(
       Uri.parse(url),
@@ -24,14 +25,8 @@ class CreateNoteRepository {
     );
 
     if (response.statusCode == 200) {
-      // return await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
-      //   await db.execute(
-      //       'CREATE TABLE notes(id TEXT PRIMARY KEY, title TEXT, content TEXT, createdAt TEXT, updatedAt TEXT)');
-      // });
       return NotionDatabase.fromJson(json.decode(response.body)['properties']);
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to retrieve Inbox Database!');
     }
   }
@@ -51,5 +46,83 @@ class CreateNoteRepository {
     final db = json.decode(dbJson);
     final data = NotionDatabase.fromJson(db['properties']);
     return data;
+  }
+
+  static Future<bool> createNotionPage(Note note) async {
+    const url = _baseUrl + _pagesPath;
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
+        HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
+      },
+      body: json.encode(_getPayload(note)),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to create page!');
+    }
+  }
+
+  static Map<String, dynamic> _getPayload(Note note) {
+    return {
+      'parent': {
+        'database_id': dotenv.env['DB_ID'],
+      },
+      'properties': {
+        'Name': {
+          'title': [
+            {
+              'text': {
+                'content': note.title,
+              }
+            },
+          ]
+        },
+        // note.categories.isNotEmpty ? 'Categories' : {'multi_select': note.categories}: {},
+        // Conditionally add to Map: https://stackoverflow.com/a/65920396/16553764
+        if (note.categories.isNotEmpty)
+          "Categories": {
+            "multi_select": note.categories,
+          },
+        if (note.dueString != null)
+          'Due string': {
+            'select': note.dueString,
+          },
+        if (note.priority != null)
+          'Priority': {
+            'select': note.priority,
+          },
+        if (note.type != null)
+          'Type': {
+            'select': note.type,
+          },
+      },
+      if (note.body.isNotEmpty)
+        'children': [
+          {
+            "object": "block",
+            "type": "paragraph",
+            "paragraph": {
+              "text": [
+                {
+                  "type": "text",
+                  "text": {
+                    'content': note.body,
+                    // "content": "Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.",
+                    // "link": {
+                    //   "url": "https://en.wikipedia.org/wiki/Lacinato_kale"
+                    // }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+    };
   }
 }
