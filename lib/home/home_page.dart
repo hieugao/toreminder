@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 // import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:lottie/lottie.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -23,20 +24,61 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final Future<List<Note>> _futureNotes;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  bool _isSyncing = false;
   List<Note> _notes = [];
 
   @override
   void initState() {
     super.initState();
-    _initData();
+    _init();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
+      setState(() => _connectionStatus = result);
+      _syncNotes(result);
+    });
   }
 
-  Future<void> _initData() async {
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> _init() async {
     // _futureNotes = _NoteRepository.getNotes();
     _futureNotes = HomeRepository.getNotes();
-    final notes = await _futureNotes;
+    final noteList = await _futureNotes;
 
-    setState(() => _notes = notes);
+    setState(() => _notes = noteList);
+  }
+
+  Future<void> _syncNotes(ConnectivityResult result) async {
+    // final ConnectivityResult result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
+      setState(() => _isSyncing = true);
+
+      for (var i = 0; i < _notes.length; i++) {
+        if (!_notes[i].isSynced) {
+          try {
+            final isCreated = await CreateNoteRepository.createNotionPage(_notes[i]);
+
+            if (isCreated) {
+              setState(() => _notes[i] = _notes[i].copyWith(isSynced: true));
+              HomeRepository.saveNotes(_notes);
+            }
+          } catch (e) {
+            // TODO: Handle error, unsynced note, logging?
+            print(e);
+            continue;
+          }
+        }
+      }
+
+      setState(() => _isSyncing = false);
+    }
+
+    HomeRepository.saveNotes(_notes);
   }
 
   void _awaitReturnValueFromSecondScreen() async {
@@ -70,6 +112,15 @@ class _MyHomePageState extends State<MyHomePage> {
           'Notes',
           style: Theme.of(context).textTheme.headline6,
         ),
+        actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: _SyncIndicator(
+                  notes: _notes, connectionStatus: _connectionStatus, isSyncing: _isSyncing),
+            ),
+          )
+        ],
       ),
       body: _notes.isEmpty
           ? const Center(child: _EmptyNotesIllustration())
@@ -123,6 +174,61 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class _SyncIndicator extends StatelessWidget {
+  const _SyncIndicator({
+    Key? key,
+    required this.notes,
+    required this.connectionStatus,
+    this.isSyncing = false,
+  }) : super(key: key);
+
+  final List<Note> notes;
+  final ConnectivityResult connectionStatus;
+  final bool isSyncing;
+
+  @override
+  Widget build(BuildContext context) {
+    final unSyncNumber = notes.where((note) => !note.isSynced).length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.grey[700],
+      ),
+      child: Row(
+        children: [
+          _buildSyncDot(),
+          const SizedBox(width: 6),
+          Text(
+              connectionStatus == ConnectivityResult.none
+                  ? 'Unsynced ($unSyncNumber)'
+                  : isSyncing
+                      ? 'Syncing... ($unSyncNumber)'
+                      : 'Synced',
+              style: Theme.of(context).textTheme.caption),
+        ],
+      ),
+    );
+    return Container();
+  }
+
+  Widget _buildSyncDot() {
+    return Container(
+      width: 5,
+      height: 5,
+      decoration: BoxDecoration(
+        color: connectionStatus == ConnectivityResult.none
+            ? Colors.red
+            : isSyncing
+                ? Colors.yellow
+                : Colors.green,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
 class _NoteCard extends StatelessWidget {
   const _NoteCard({
     Key? key,
@@ -138,49 +244,71 @@ class _NoteCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
         elevation: 4,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Flexible(flex: 5, child: _CategoriesBlock(categories: note.categories)),
-                  Text(
-                    timeago.format(note.createdAt),
-                    style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(note.title),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _LabelsBlock(type: note.type, dueString: note.dueString, priority: note.priority),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Column(children: [
-                      note.body.isEmpty
-                          ? Text(
-                              note.body,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
-                            )
-                          : Container(),
-                    ]),
-                  ),
-                ],
-              ),
-            ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: DottedBorder(
+          strokeCap: StrokeCap.round,
+          // color: note.isSynced ? Colors.transparent : Colors.red[700]!.withOpacity(0.6),
+          color: Colors.transparent,
+          strokeWidth: 0,
+          // dashPattern: const [6, 6, 2, 6],
+          // dashPattern: const [0, 0, 0, 0],
+          borderType: BorderType.RRect,
+          radius: const Radius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(flex: 5, child: _CategoriesBlock(categories: note.categories)),
+                    Row(children: [
+                      Text(
+                        timeago.format(note.createdAt),
+                        style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: note.isSynced ? Colors.green : Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ])
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(note.title),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _LabelsBlock(
+                        type: note.type, dueString: note.dueString, priority: note.priority),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(children: [
+                        note.body.isEmpty
+                            ? Text(
+                                note.body,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption!
+                                    .apply(color: Colors.white38),
+                              )
+                            : Container(),
+                      ]),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
