@@ -4,24 +4,23 @@ import '../../features/note/models.dart';
 import '../../features/note/services.dart';
 import '../../services/connectivity_service.dart';
 
-final notionDatabaseProvider =
-    StateNotifierProvider.autoDispose<NotionDatabaseViewModel, NotionDatabase>(
-        (ref) => NotionDatabaseViewModel(ref));
+final notionDatabaseProvider = StateNotifierProvider<NotionDatabaseViewModel, NotionDatabase>(
+    (ref) => NotionDatabaseViewModel(ref.read));
 
-final noteProvider = StateProvider((_) => Note.initial());
+final noteProvider = StateProvider<Note>((ref) => Note.initial());
 
 // TODO: Should I use StateProvider or FutureProvider instead?
 class NotionDatabaseViewModel extends StateNotifier<NotionDatabase> {
-  NotionDatabaseViewModel(this._ref) : super(NotionDatabase());
+  NotionDatabaseViewModel(this._read) : super(NotionDatabase());
 
-  final Ref _ref;
+  final Reader _read;
 
-  NotionDatabaseService get _service => _ref.read(notionDatabaseServiceProvider);
+  NotionDatabaseService get _service => _read(notionDatabaseServiceProvider);
 
   Future<void> init() async {
     state = await _service.loadDatabase();
 
-    final hasNetwork = await _ref.read(connectivityServiceProvider.future);
+    final hasNetwork = await _read(connectivityServiceProvider.future);
 
     if (hasNetwork == ConnectivityStatus.connected) {
       state = await _service.fetchDatabase();

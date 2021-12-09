@@ -11,6 +11,7 @@ part 'models.g.dart';
 
 @freezed
 class Note with _$Note {
+  const Note._();
   factory Note({
     @Deprecated('Unused') required int id,
     @Default('') String title,
@@ -25,11 +26,11 @@ class Note with _$Note {
     // final DateTime updatedAt,
   }) = _Note;
 
-  factory Note.initial() => Note(
-        id: Random().nextInt(10000),
-      );
+  factory Note.initial() => Note(id: Random().nextInt(10000));
 
   factory Note.fromJson(Map<String, dynamic> json) => _$NoteFromJson(json);
+
+  bool isEmpty() => title.isEmpty;
 }
 
 @freezed
@@ -38,6 +39,7 @@ class NotionDatabase with _$NotionDatabase {
 
   @CustomListNotionTagConverter()
   factory NotionDatabase({
+    // TODO: Fix this annoying warning.
     @JsonKey(name: 'Categories') @Default([]) List<NotionTag> categories,
     @JsonKey(name: 'Due string') @Default([]) List<NotionTag> dueStrings,
     @JsonKey(name: 'Priority') @Default([]) List<NotionTag> priorities,

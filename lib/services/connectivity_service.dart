@@ -8,12 +8,11 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-final connectivityServiceProvider = StreamProvider.autoDispose<ConnectivityStatus>((ref) {
-  final connectivityStreamController = _WifiConnectivityService().connectivityStreamController;
-  ref.onDispose(() => connectivityStreamController.close());
-  return connectivityStreamController.stream;
+final connectivityServiceProvider = StreamProvider<ConnectivityStatus>((ref) {
+  return _WifiConnectivityService().connectivityStreamController.stream;
 });
 
+// FIXME: Add `loading` state.
 enum ConnectivityStatus { connected, disconnected }
 
 class _WifiConnectivityService {

@@ -5,25 +5,26 @@ import '/services/connectivity_service.dart';
 
 import '../../features/note/models.dart';
 
-final noteListProvider = StateNotifierProvider.autoDispose<NoteListViewModel, List<Note>>((ref) {
-  final service = ref.watch(noteServiceProvider);
-  return NoteListViewModel(service, ref);
+final noteListProvider = StateNotifierProvider<NoteListViewModel, List<Note>>((ref) {
+  return NoteListViewModel(ref);
 });
 
+// FIXME: Remove this and use `ConnectivityStatus.loading` instead.
 final isSyncingProvider = StateProvider<bool>((ref) => false);
 
 class NoteListViewModel extends StateNotifier<List<Note>> {
   // TODO: Replace _service with ref.watch?
-  NoteListViewModel(this._service, this._ref, [List<Note>? initialTodos])
-      : super(initialTodos ?? []);
+  NoteListViewModel(this._ref, [List<Note>? initialTodos]) : super(initialTodos ?? []);
 
-  final NoteService _service;
-  final AutoDisposeStateNotifierProviderRef _ref;
+  final Ref _ref;
 
+  NoteService get _service => _ref.read(noteServiceProvider);
+
+  // FIXME: Move this to constructor initialization?
   Future<void> init() async {
     state = await _service.loadNotes();
 
-    // TODO: _ref.listen instead?
+    // TODO: User `_ref.listen()` instead?
     final asyncValue = _ref.watch(connectivityServiceProvider);
 
     // FIXME: Should I check the internet here or inside NotionDatabaseService?
@@ -52,9 +53,11 @@ class NoteListViewModel extends StateNotifier<List<Note>> {
   }
 
   Future<void> add(Note note) async {
-    final hasNetwork = await _ref.read(connectivityServiceProvider.future);
+    if (note.isEmpty()) return;
 
     try {
+      final hasNetwork = await _ref.read(connectivityServiceProvider.future);
+
       if (hasNetwork == ConnectivityStatus.connected) {
         if (await NotionDatabaseService.createNotionPage(note)) {
           note = note.copyWith(isSynced: true);
