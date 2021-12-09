@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import './home/home_page.dart';
-import './create_note/create_note_page.dart';
 import './common/constants.dart';
 import './common/theme.dart';
+import './pages/home/home_page.dart';
+import './pages/create_note/create_note_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);

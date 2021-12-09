@@ -2,17 +2,42 @@ import 'dart:convert';
 import 'dart:io' show HttpHeaders;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import './models.dart';
+import 'models.dart';
 
-class CreateNoteRepository {
+final noteServiceProvider = Provider<NoteService>((ref) => throw UnimplementedError());
+final notionDatabaseServiceProvider =
+    Provider<NotionDatabaseService>((ref) => throw UnimplementedError());
+
+class NoteService {
+  NoteService(this._prefs);
+
+  final SharedPreferences _prefs;
+
+  Future<void> saveNotes(List<Note> notes) async {
+    _prefs.setString('notes', json.encode(notes));
+  }
+
+  Future<List<Note>> loadNotes() async {
+    final notesJson = _prefs.getString('notes');
+    final notes = json.decode(notesJson ?? '');
+    return notes.map<Note>((note) => Note.fromJson(note)).toList();
+  }
+}
+
+class NotionDatabaseService {
+  NotionDatabaseService(this._prefs);
+
+  final SharedPreferences _prefs;
+
   static const String _baseUrl = 'https://api.notion.com/v1/';
   static const String _dbPath = 'databases/';
   static const String _pagesPath = 'pages/';
 
-  static Future<NotionDatabase> fetchDatabase() async {
+  Future<NotionDatabase> fetchDatabase() async {
     final url = '$_baseUrl$_dbPath${dotenv.env['DB_ID']}';
 
     final response = await http.get(
@@ -31,15 +56,12 @@ class CreateNoteRepository {
     }
   }
 
-  static Future<void> saveDatabase(NotionDatabase db) async {
-    final prefs = await SharedPreferences.getInstance();
-    final dbJson = jsonEncode(db.toJsonCustom());
-    prefs.setString('database', dbJson);
+  Future<void> saveDatabase(NotionDatabase db) async {
+    _prefs.setString('database', jsonEncode(db.toJsonCustom()));
   }
 
-  static Future<NotionDatabase> loadDatabase() async {
-    final prefs = await SharedPreferences.getInstance();
-    final dbJson = prefs.getString('database');
+  Future<NotionDatabase> loadDatabase() async {
+    final dbJson = _prefs.getString('database');
     if (dbJson == null) {
       return NotionDatabase();
     }

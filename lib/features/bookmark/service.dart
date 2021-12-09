@@ -5,7 +5,7 @@
 
 // import './models.dart';
 
-class BookmarkRepository {
+class BookmarkService {
   // TODO: Fake data, will be deteled.
   static const List<Map<String, dynamic>> bookmarksJson = [
     {

@@ -3,14 +3,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../bookmark/models.dart';
-import '../bookmark/repository.dart';
+import '../../features/bookmark/models.dart';
+import '../../features/bookmark/service.dart';
 
 class BookmarkSection extends StatelessWidget {
   const BookmarkSection({Key? key}) : super(key: key);
 
   static final List<Bookmark> _bookmarks =
-      BookmarkRepository.bookmarksJson.map((json) => Bookmark.fromJson(json)).toList();
+      BookmarkService.bookmarksJson.map((json) => Bookmark.fromJson(json)).toList();
 
   @override
   Widget build(BuildContext context) {

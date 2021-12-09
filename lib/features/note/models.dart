@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:characters/characters.dart';
@@ -12,17 +13,21 @@ part 'models.g.dart';
 class Note with _$Note {
   factory Note({
     @Deprecated('Unused') required int id,
-    required String title,
+    @Default('') String title,
     @Default('') String body,
     @Default([]) List<NotionTag> categories,
     NotionTag? type,
     NotionTag? dueString,
     NotionTag? priority,
-    required DateTime createdAt,
+    DateTime? createdAt,
     @Default(false) bool isSynced,
     // TODO: Will be supported in the future.
     // final DateTime updatedAt,
   }) = _Note;
+
+  factory Note.initial() => Note(
+        id: Random().nextInt(10000),
+      );
 
   factory Note.fromJson(Map<String, dynamic> json) => _$NoteFromJson(json);
 }
