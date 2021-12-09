@@ -1,56 +1,13 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// import '../../common/utils.dart';
 import '../../features/note/models.dart';
-import '../../features/note/services.dart';
-// import '../common/constants.dart';
 import '../home/view_models.dart';
-import '../../features/note/models.dart';
-import '../../features/note/services.dart';
 import 'view_models.dart';
 
 class CreateNotePage extends ConsumerWidget {
   const CreateNotePage({Key? key}) : super(key: key);
-
-//   @override
-//   State<CreateNotePage> createState() => _CreateNotePageState();
-// }
-
-// class _CreateNotePageState extends State<CreateNotePage> {
-  // final _titleController = TextEditingController();
-  // final _bodyController = TextEditingController();
-  // late Future<NotionDatabase> _futureNotionDatabase;
-
-  // List<NotionTag> _categories = [];
-  // NotionTag? _dueString;
-  // NotionTag? _priority;
-  // NotionTag? _type;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _futureNotionDatabase = NotionDatabaseService.loadDatabase();
-  //   _syncDB();
-  // }
-
-  // Future<void> _syncDB() async {
-  //   if (await hasNetwork()) {
-  //     _futureNotionDatabase = NotionDatabaseService.fetchDatabase();
-  //     final db = await _futureNotionDatabase;
-  //     NotionDatabaseService.saveDatabase(db);
-  //   }
-  // }
-
-  // @override
-  // void dispose() {
-  //   _titleController.dispose();
-  //   _bodyController.dispose();
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -130,26 +87,6 @@ class CreateNotePage extends ConsumerWidget {
                             : Row(children: [
                                 for (final NotionTag tag in db.categories) _TagProperty(tag: tag),
                               ]),
-                        // for (final category in _categories)
-                        //     _TagProperty(tag: category),
-                        // FutureBuilder<NotionDatabase>(
-                        //   future: _futureNotionDatabase,
-                        //   builder: (context, snapshot) {
-                        //     if (snapshot.hasData) {
-                        //       // final children = snapshot.data!.categories.map((category) {
-                        //       //   return _TagProperty(tag: category);
-                        //       // }).toList();
-                        //       //
-                        //       // return Row(children: children);
-                        //       return Container();
-                        //     } else if (snapshot.hasError) {
-                        //       return Text('${snapshot.error}');
-                        //     }
-
-                        //     // By default, show a loading spinner.
-                        //     return const CircularProgressIndicator();
-                        //   },
-                        // ),
                       ],
                     ),
                   ),
@@ -215,187 +152,11 @@ class CreateNotePage extends ConsumerWidget {
                                     : Container(),
                                 note.type != null ? _TagProperty(tag: note.type!) : Container(),
                               ]),
-                        // FutureBuilder<NotionDatabase>(
-                        //   future: _futureNotionDatabase,
-                        //   builder: (context, snapshot) {
-                        //     if (snapshot.hasData) {
-                        //       // final children = snapshot.data!.categories.map((category) {
-                        //       //   return _TagProperty(tag: category);
-                        //       // }).toList();
-                        //       //
-                        //       // return Row(children: children);
-                        //       return Container();
-                        //     } else if (snapshot.hasError) {
-                        //       return Text('${snapshot.error}');
-                        //     }
-
-                        //     // By default, show a loading spinner.
-                        //     return const CircularProgressIndicator();
-                        //   },
-                        // ),
                       ],
                     ),
                   ),
                 ],
               ),
-
-              // FutureBuilder<NotionDatabase>(
-              //   future: _futureNotionDatabase,
-              //   builder: (context, snapshot) {
-              //     if (snapshot.hasData) {
-              //       final NotionDatabase db = snapshot.data!;
-
-              //       // return _ListViewSearch(tags: snapshot.data!.categories);
-              //       return Column(
-              //         children: [
-              //           GestureDetector(
-              //             // Source: https://stackoverflow.com/a/54850948/16553764
-              //             behavior: HitTestBehavior.translucent,
-              //             onTap: () {
-              //               showModalBottomSheet(
-              //                 context: context,
-              //                 isScrollControlled: true,
-              //                 elevation: 16,
-              //                 shape: RoundedRectangleBorder(
-              //                   borderRadius: BorderRadius.circular(16),
-              //                 ),
-              //                 builder: (context) => Container(
-              //                   height: MediaQuery.of(context).size.height * 0.75,
-              //                   padding: const EdgeInsets.all(16),
-              //                   child: _ListViewSearch(
-              //                     tags: db.categories,
-              //                     onTap: (tags) => setState(() => _categories = tags),
-              //                   ),
-              //                 ),
-              //               );
-              //             },
-              //             child: Row(
-              //               mainAxisSize: MainAxisSize.max,
-              //               children: [
-              //                 const Text('Categories'),
-              //                 const SizedBox(width: 8),
-              //                 _categories.isEmpty
-              //                     ? const _TagPropertyAddButton()
-              //                     : Row(children: [
-              //                         for (final NotionTag tag in _categories)
-              //                           _TagProperty(tag: tag),
-              //                       ]),
-              //                 // for (final category in _categories)
-              //                 //     _TagProperty(tag: category),
-              //                 // FutureBuilder<NotionDatabase>(
-              //                 //   future: _futureNotionDatabase,
-              //                 //   builder: (context, snapshot) {
-              //                 //     if (snapshot.hasData) {
-              //                 //       // final children = snapshot.data!.categories.map((category) {
-              //                 //       //   return _TagProperty(tag: category);
-              //                 //       // }).toList();
-              //                 //       //
-              //                 //       // return Row(children: children);
-              //                 //       return Container();
-              //                 //     } else if (snapshot.hasError) {
-              //                 //       return Text('${snapshot.error}');
-              //                 //     }
-
-              //                 //     // By default, show a loading spinner.
-              //                 //     return const CircularProgressIndicator();
-              //                 //   },
-              //                 // ),
-              //               ],
-              //             ),
-              //           ),
-              //           const SizedBox(height: 16),
-              //           GestureDetector(
-              //             behavior: HitTestBehavior.translucent,
-              //             onTap: () {
-              //               showModalBottomSheet(
-              //                 context: context,
-              //                 isScrollControlled: true,
-              //                 elevation: 16,
-              //                 shape: RoundedRectangleBorder(
-              //                   borderRadius: BorderRadius.circular(16),
-              //                 ),
-              //                 builder: (context) => Container(
-              //                   height: MediaQuery.of(context).size.height * 0.85,
-              //                   padding: const EdgeInsets.all(16),
-              //                   child: ListView(
-              //                     children: [
-              //                       const Text('Lorem ipsum how uina supoin'),
-              //                       Row(
-              //                         children: [],
-              //                       ),
-              //                       const SizedBox(height: 16),
-              //                       const Text('Due string'),
-              //                       const SizedBox(height: 4),
-              //                       _GridTagLabel(
-              //                           tags: snapshot.data!.dueStrings,
-              //                           onTap: (tag) => setState(() => _dueString = tag)),
-              //                       const SizedBox(height: 16),
-              //                       const Text('Due string'),
-              //                       const SizedBox(height: 4),
-              //                       _GridTagLabel(
-              //                           tags: snapshot.data!.priorities,
-              //                           onTap: (tag) => setState(() => _priority = tag)),
-              //                       const SizedBox(height: 16),
-              //                       const Text('Due string'),
-              //                       const SizedBox(height: 4),
-              //                       _GridTagLabel(
-              //                           tags: snapshot.data!.types,
-              //                           onTap: (tag) => setState(() => _type = tag)),
-              //                     ],
-              //                   ),
-              //                 ),
-              //               );
-              //             },
-              //             child: Row(
-              //               mainAxisSize: MainAxisSize.max,
-              //               children: [
-              //                 const Text('Labels'),
-              //                 const SizedBox(width: 8),
-              //                 _isEmptyLabels
-              //                     ? const _TagPropertyAddButton()
-              //                     : Row(
-              //                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //                         children: [
-              //                             _dueString != null
-              //                                 ? _TagProperty(tag: _dueString!)
-              //                                 : Container(),
-              //                             _priority != null
-              //                                 ? _TagProperty(tag: _priority!)
-              //                                 : Container(),
-              //                             _type != null ? _TagProperty(tag: _type!) : Container(),
-              //                           ]),
-              //                 // FutureBuilder<NotionDatabase>(
-              //                 //   future: _futureNotionDatabase,
-              //                 //   builder: (context, snapshot) {
-              //                 //     if (snapshot.hasData) {
-              //                 //       // final children = snapshot.data!.categories.map((category) {
-              //                 //       //   return _TagProperty(tag: category);
-              //                 //       // }).toList();
-              //                 //       //
-              //                 //       // return Row(children: children);
-              //                 //       return Container();
-              //                 //     } else if (snapshot.hasError) {
-              //                 //       return Text('${snapshot.error}');
-              //                 //     }
-
-              //                 //     // By default, show a loading spinner.
-              //                 //     return const CircularProgressIndicator();
-              //                 //   },
-              //                 // ),
-              //               ],
-              //             ),
-              //           ),
-              //         ],
-              //       );
-              //     } else if (snapshot.hasError) {
-              //       return Text('${snapshot.error}');
-              //     }
-
-              //     // By default, show a loading spinner.
-              //     // return const CircularProgressIndicator();
-              //     return Container();
-              //   },
-              // ),
             ),
             const SizedBox(height: 8),
             Card(
@@ -425,12 +186,6 @@ class CreateNotePage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           ref.read(noteListProvider).add(note);
-          // Navigator.pushNamed(context, Routes.createNote),
-          //   void _sendDataBack(BuildContext context) {
-          //     String textToSendBack = textFieldController.text;
-          //     Navigator.pop(context, textToSendBack);
-          //   }
-
           // final note = Note(
           //   id: Random().nextInt(10000),
           //   title: _titleController.text,
@@ -449,18 +204,6 @@ class CreateNotePage extends ConsumerWidget {
     );
   }
 }
-
-// class _NoteProperty extends StatelessWidget {
-//   const _NoteProperty({Key? key}) : super(key: key);
-
-//   final String title;
-//   final List<NotionTag> tags;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container();
-//   }
-// }
 
 class _TagPropertyAddButton extends StatelessWidget {
   const _TagPropertyAddButton({Key? key}) : super(key: key);
@@ -676,124 +419,6 @@ class _GridTagLabelState extends State<_GridTagLabel> {
           isSelected: _selectedTag == widget.tags[index],
         );
       },
-
-      // crossAxisCount: 3,
-      // crossAxisSpacing: 1.0,
-      // mainAxisSpacing: 1.0,
-      // padding: const EdgeInsets.all(0),
-      // children: tags.map((tag) => _TagLabel(tag: tag, onTap: onTap)).toList(),
     );
   }
 }
-
-// class FirstScreen extends StatefulWidget {
-//   @override
-//   _FirstScreenState createState() {
-//     return _FirstScreenState();
-//   }
-// }
-
-// class _FirstScreenState extends State<FirstScreen> {
-
-//   String text = 'Text';
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text('First screen')),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-
-//             Padding(
-//               padding: const EdgeInsets.all(32.0),
-//               child: Text(
-//                 text,
-//                 style: TextStyle(fontSize: 24),
-//               ),
-//             ),
-
-//             RaisedButton(
-//               child: Text(
-//                 'Go to second screen',
-//                 style: TextStyle(fontSize: 24),
-//               ),
-//               onPressed: () {
-//                 _awaitReturnValueFromSecondScreen(context);
-//               },
-//             )
-
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   void _awaitReturnValueFromSecondScreen(BuildContext context) async {
-
-//     // start the SecondScreen and wait for it to finish with a result
-//     final result = await Navigator.push(
-//         context,
-//         MaterialPageRoute(
-//           builder: (context) => SecondScreen(),
-//         ));
-
-//     // after the SecondScreen result comes back update the Text widget with it
-//     setState(() {
-//       text = result;
-//     });
-//   }
-// }
-
-// class SecondScreen extends StatefulWidget {
-//   @override
-//   _SecondScreenState createState() {
-//     return _SecondScreenState();
-//   }
-// }
-
-// class _SecondScreenState extends State<SecondScreen> {
-//   // this allows us to access the TextField text
-//   TextEditingController textFieldController = TextEditingController();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text('Second screen')),
-//       body: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-
-//           Padding(
-//             padding: const EdgeInsets.all(32.0),
-//             child: TextField(
-//               controller: textFieldController,
-//               style: TextStyle(
-//                 fontSize: 24,
-//                 color: Colors.black,
-//               ),
-//             ),
-//           ),
-
-//           RaisedButton(
-//             child: Text(
-//               'Send text back',
-//               style: TextStyle(fontSize: 24),
-//             ),
-//             onPressed: () {
-//               _sendDataBack(context);
-//             },
-//           )
-
-//         ],
-//       ),
-//     );
-//   }
-
-//   // get the text in the TextField and send it back to the FirstScreen
-//   void _sendDataBack(BuildContext context) {
-//     String textToSendBack = textFieldController.text;
-//     Navigator.pop(context, textToSendBack);
-//   }
-// }
