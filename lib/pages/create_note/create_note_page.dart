@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,14 +13,20 @@ class CreateNotePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      ref.read(notionDatabaseProvider.notifier).init();
-    });
+    // FIXME: This will be called every time `note` is changed, I only want to call it once
+    // when internet is available:
+    // 1. Already
+    // 2. When internet is available
+    // WidgetsBinding.instance?.addPostFrameCallback((_) {
+    //   ref.read(notionDatabaseProvider.notifier).init();
+    // });
 
     final note = ref.watch(noteProvider);
-    final db = ref.watch(notionDatabaseProvider);
+    final asyncDB = ref.watch(notionDatabaseProvider);
 
     final bool isEmptyLabels = note.dueString == null && note.priority == null && note.type == null;
+
+    print('Rebuilt check - Create Note page');
 
     return Scaffold(
       appBar: AppBar(
@@ -31,22 +39,16 @@ class CreateNotePage extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: TextField(
-                // TODO: Will use controller when editing feature is implemented.
-                // controller: _titleController,
-                onChanged: (value) => ref.read(noteProvider).copyWith(title: value),
-                maxLines: null,
-                style: Theme.of(context).textTheme.headline6,
-                decoration: const InputDecoration(
-                  isDense: true,
-                  contentPadding: EdgeInsets.all(0),
-                  hintText: 'Write the title...',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 4.0),
+            //   child: _TextEditingBlock(
+            //     // TODO: Will use controller when editing feature is implemented.
+            //     // controller: _titleController,
+            //     style: Theme.of(context).textTheme.headline6!,
+            //     onChanged: (value) =>
+            //         ref.read(noteProvider.state).state = note.copyWith(title: value),
+            //   ),
+            // ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
@@ -56,40 +58,41 @@ class CreateNotePage extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  GestureDetector(
-                    // Source: https://stackoverflow.com/a/54850948/16553764
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        elevation: 16,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        builder: (context) => Container(
-                          height: MediaQuery.of(context).size.height * 0.75,
-                          padding: const EdgeInsets.all(16),
-                          child: _ListViewSearch(
-                            tags: db.categories,
-                            onTap: (tags) => ref.read(noteProvider).copyWith(categories: tags),
-                          ),
-                        ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const Text('Categories'),
-                        const SizedBox(width: 8),
-                        db.categories.isEmpty
-                            ? const _TagPropertyAddButton()
-                            : Row(children: [
-                                for (final NotionTag tag in db.categories) _TagProperty(tag: tag),
-                              ]),
-                      ],
-                    ),
-                  ),
+                  // GestureDetector(
+                  //   // Source: https://stackoverflow.com/a/54850948/16553764
+                  //   behavior: HitTestBehavior.translucent,
+                  //   onTap: () {
+                  //     showModalBottomSheet(
+                  //       context: context,
+                  //       isScrollControlled: true,
+                  //       elevation: 16,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(16),
+                  //       ),
+                  //       builder: (context) => Container(
+                  //         height: MediaQuery.of(context).size.height * 0.75,
+                  //         padding: const EdgeInsets.all(16),
+                  //         child: _ListViewSearch(
+                  //           tags: db.categories,
+                  //           onTap: (tags) => ref.read(noteProvider.state).state =
+                  //               note.copyWith(categories: tags),
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Row(
+                  //     mainAxisSize: MainAxisSize.max,
+                  //     children: [
+                  //       const Text('Categories'),
+                  //       const SizedBox(width: 8),
+                  //       db.categories.isEmpty
+                  //           ? const _TagPropertyAddButton()
+                  //           : Row(children: [
+                  //               for (final NotionTag tag in note.categories) _TagProperty(tag: tag),
+                  //             ]),
+                  //     ],
+                  //   ),
+                  // ),
                   const SizedBox(height: 16),
                   GestureDetector(
                     behavior: HitTestBehavior.translucent,
@@ -102,38 +105,41 @@ class CreateNotePage extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         builder: (context) => Container(
-                          height: MediaQuery.of(context).size.height * 0.85,
-                          padding: const EdgeInsets.all(16),
-                          child: ListView(
-                            children: [
-                              const Text('Lorem ipsum how uina supoin'),
-                              Row(
-                                children: [],
+                            height: MediaQuery.of(context).size.height * 0.85,
+                            padding: const EdgeInsets.all(16),
+                            child: asyncDB.when(
+                              data: (db) => ListView(
+                                children: [
+                                  const Text('Lorem ipsum how uina supoin'),
+                                  const SizedBox(height: 16),
+                                  const Text('Due string'),
+                                  const SizedBox(height: 4),
+                                  _GridTagLabel(
+                                    tags: db.dueStrings,
+                                    onTap: (tag) => ref.read(noteProvider.state).state =
+                                        note.copyWith(dueString: tag),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text('Due string'),
+                                  const SizedBox(height: 4),
+                                  _GridTagLabel(
+                                    tags: db.priorities,
+                                    onTap: (tag) => ref.read(noteProvider.state).state =
+                                        note.copyWith(priority: tag),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text('Due string'),
+                                  const SizedBox(height: 4),
+                                  _GridTagLabel(
+                                    tags: db.types,
+                                    onTap: (tag) => ref.read(noteProvider.state).state =
+                                        note.copyWith(type: tag),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              const Text('Due string'),
-                              const SizedBox(height: 4),
-                              _GridTagLabel(
-                                tags: db.dueStrings,
-                                onTap: (tag) => ref.read(noteProvider).copyWith(dueString: tag),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text('Due string'),
-                              const SizedBox(height: 4),
-                              _GridTagLabel(
-                                tags: db.priorities,
-                                onTap: (tag) => ref.read(noteProvider).copyWith(priority: tag),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text('Due string'),
-                              const SizedBox(height: 4),
-                              _GridTagLabel(
-                                tags: db.types,
-                                onTap: (tag) => ref.read(noteProvider).copyWith(type: tag),
-                              ),
-                            ],
-                          ),
-                        ),
+                              loading: () => const Center(child: CircularProgressIndicator()),
+                              error: (e, st) => Text('Error: $e'),
+                            )),
                       );
                     },
                     child: Row(
@@ -170,13 +176,10 @@ class CreateNotePage extends ConsumerWidget {
                 constraints: BoxConstraints(
                   minHeight: MediaQuery.of(context).size.height * 0.25,
                 ),
-                child: TextField(
-                  // controller: _bodyController,
-                  onChanged: (value) => ref.read(noteProvider).copyWith(body: value),
-                  decoration: const InputDecoration(
-                    hintText: 'Write the content...',
-                    border: InputBorder.none,
-                  ),
+                child: _TextEditingBlock(
+                  style: Theme.of(context).textTheme.bodyText1!,
+                  onChanged: (value) =>
+                      ref.read(noteProvider.state).state = note.copyWith(body: value),
                 ),
               ),
             ),
@@ -185,7 +188,9 @@ class CreateNotePage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ref.read(noteListProvider).add(note);
+          ref.read(noteListProvider.notifier).add(ref.read(noteProvider));
+          ref.read(noteProvider.state).state = Note.initial();
+
           // final note = Note(
           //   id: Random().nextInt(10000),
           //   title: _titleController.text,
@@ -197,9 +202,55 @@ class CreateNotePage extends ConsumerWidget {
           //   createdAt: DateTime.now(),
           // );
 
-          // Navigator.pop(context, note);
+          Navigator.pop(context, note);
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// Source: https://stackoverflow.com/a/52930197/16553764
+class _TextEditingBlock extends StatefulWidget {
+  const _TextEditingBlock({Key? key, required this.style, required this.onChanged})
+      : super(key: key);
+
+  final TextStyle style;
+  final Function(String) onChanged;
+
+  @override
+  State<_TextEditingBlock> createState() => _TextEditingBlockState();
+}
+
+class _TextEditingBlockState extends State<_TextEditingBlock> {
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 750), () => widget.onChanged(query));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      // TODO: Will use controller when editing feature is implemented.
+      // controller: _titleController,
+      onChanged: _onSearchChanged,
+      maxLines: null,
+      style: widget.style,
+      // Theme.of(context).textTheme.headline6,
+      decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.all(0),
+        hintText: 'Write text here...',
+        border: InputBorder.none,
       ),
     );
   }
@@ -331,44 +382,6 @@ class _ListViewSearchState extends State<_ListViewSearch> {
   }
 }
 
-class _TagLabel extends StatelessWidget {
-  const _TagLabel({
-    Key? key,
-    required this.tag,
-    required this.onTap,
-    this.isSelected = false,
-    this.emojiOnly = false,
-  }) : super(key: key);
-
-  final NotionTag tag;
-  final Function(NotionTag) onTap;
-  final bool isSelected;
-  final bool emojiOnly;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onTap(tag),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: isSelected ? tag.color.toColor().withOpacity(0.6) : Colors.grey[800],
-            ),
-            child: Text(tag.emoji,
-                style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.toColor())),
-          ),
-          const SizedBox(width: 6),
-          Text(tag.content,
-              style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.toColor())),
-        ],
-      ),
-    );
-  }
-}
-
 class _GridTagLabel extends StatefulWidget {
   const _GridTagLabel({
     Key? key,
@@ -410,15 +423,51 @@ class _GridTagLabelState extends State<_GridTagLabel> {
       itemBuilder: (context, index) {
         return _TagLabel(
           tag: widget.tags[index],
+          isSelected: _selectedTag == widget.tags[index],
           onTap: (tag) {
-            setState(() {
-              _selectedTag = widget.tags[index];
-            });
+            setState(() => _selectedTag = widget.tags[index]);
             widget.onTap(tag);
           },
-          isSelected: _selectedTag == widget.tags[index],
         );
       },
+    );
+  }
+}
+
+class _TagLabel extends StatelessWidget {
+  const _TagLabel({
+    Key? key,
+    required this.tag,
+    required this.onTap,
+    this.isSelected = false,
+    this.emojiOnly = false,
+  }) : super(key: key);
+
+  final NotionTag tag;
+  final Function(NotionTag) onTap;
+  final bool isSelected;
+  final bool emojiOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onTap(tag),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: isSelected ? tag.color.toColor().withOpacity(0.6) : Colors.grey[800],
+            ),
+            child: Text(tag.emoji,
+                style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.toColor())),
+          ),
+          const SizedBox(width: 6),
+          Text(tag.content,
+              style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.toColor())),
+        ],
+      ),
     );
   }
 }
