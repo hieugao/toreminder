@@ -79,8 +79,8 @@ import 'view_models.dart';
 //     NoteService.saveNotes(_notes);
 //   }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
