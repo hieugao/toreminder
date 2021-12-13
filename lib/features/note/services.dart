@@ -1,5 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show HttpHeaders;
+import 'dart:io' show HttpHeaders, SocketException;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,19 +41,28 @@ class NotionDatabaseService {
   Future<NotionDatabase> fetchDatabase() async {
     final url = '$_baseUrl$_dbPath${dotenv.env['DB_ID']}';
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
-        'Content-Type': 'application/json',
-        HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
-      },
-    );
+    // Source: https://stackoverflow.com/a/61037635
+    // TODO: Create a base (reusable way) - https://stackoverflow.com/questions/60648984
+    // TODO: Or using Dio.
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
+          'Content-Type': 'application/json',
+          HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      return NotionDatabase.fromJson(json.decode(response.body)['properties']);
-    } else {
-      throw Exception('Failed to retrieve Inbox Database!');
+      if (response.statusCode == 200) {
+        return NotionDatabase.fromJson(json.decode(response.body)['properties']);
+      } else {
+        throw Exception('Failed to retrieve Inbox Database!');
+      }
+    } on SocketException catch (e) {
+      throw Exception('Socket Error: $e');
+    } on Error catch (e) {
+      throw Exception('General Error: $e');
     }
   }
 
@@ -73,20 +83,26 @@ class NotionDatabaseService {
   static Future<bool> createNotionPage(Note note) async {
     const url = _baseUrl + _pagesPath;
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
-        HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
-      },
-      body: json.encode(_getPayload(note)),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
+          HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
+        },
+        body: json.encode(_getPayload(note)),
+      );
 
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      throw Exception('Failed to create page!');
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('Failed to create page!');
+      }
+    } on SocketException catch (e) {
+      throw Exception('Socket Error: $e');
+    } on Error catch (e) {
+      throw Exception('General Error: $e');
     }
   }
 
