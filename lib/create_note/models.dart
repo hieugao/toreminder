@@ -13,12 +13,13 @@ class Note with _$Note {
   factory Note({
     @Deprecated('Unused') required int id,
     required String title,
-    String? body,
-    List<NotionTag>? categories,
+    @Default('') String body,
+    @Default([]) List<NotionTag> categories,
     NotionTag? type,
     NotionTag? dueString,
     NotionTag? priority,
     required DateTime createdAt,
+    @Default(false) bool isSynced,
     // TODO: Will be supported in the future.
     // final DateTime updatedAt,
   }) = _Note;
@@ -31,7 +32,6 @@ class NotionDatabase with _$NotionDatabase {
   const NotionDatabase._();
 
   @CustomListNotionTagConverter()
-  @JsonSerializable(explicitToJson: true)
   factory NotionDatabase({
     @JsonKey(name: 'Categories') @Default([]) List<NotionTag> categories,
     @JsonKey(name: 'Due string') @Default([]) List<NotionTag> dueStrings,
@@ -83,6 +83,7 @@ class NotionTag with _$NotionTag {
   factory NotionTag({
     required String name,
     // required Color color,
+    // TODO: Change to `notionColor` and create `color` getter.
     required NotionColors color,
   }) = _NotionTag;
 

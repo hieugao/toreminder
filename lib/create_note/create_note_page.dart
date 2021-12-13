@@ -1,10 +1,9 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../common/constants.dart';
+import '../common/utils.dart';
 import './models.dart';
 import './repository.dart';
 
@@ -33,21 +32,10 @@ class _CreateNotePageState extends State<CreateNotePage> {
   }
 
   Future<void> _syncDB() async {
-    final hasNetwork = await _hasNetwork();
-
-    if (hasNetwork) {
+    if (await hasNetwork()) {
       _futureNotionDatabase = CreateNoteRepository.fetchDatabase();
       final db = await _futureNotionDatabase;
       CreateNoteRepository.saveDatabase(db);
-    }
-  }
-
-  Future<bool> _hasNetwork() async {
-    try {
-      final result = await InternetAddress.lookup('example.com');
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException catch (_) {
-      return false;
     }
   }
 
