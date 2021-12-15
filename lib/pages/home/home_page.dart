@@ -358,10 +358,10 @@ class _CategoriesBlock extends StatelessWidget {
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
-                  color: categories[0].color.toColor(),
+                  color: categories[0].color.fg,
                 ),
                 child: Text(
-                  categories[0].emoji,
+                  categories[0].emoji ?? '',
                   style: Theme.of(context).textTheme.caption!.copyWith(fontSize: 10),
                 ),
               ),
@@ -406,7 +406,7 @@ class _LabelsBlock extends StatelessWidget {
       strokeWidth: 1,
       borderType: BorderType.RRect,
       radius: const Radius.circular(12),
-      padding: EdgeInsets.all(6),
+      padding: const EdgeInsets.all(6),
       child: ClipRRect(
         // borderRadius: BorderRadius.all(Radius.circular(12)),
         child: Container(

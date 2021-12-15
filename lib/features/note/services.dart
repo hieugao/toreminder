@@ -23,9 +23,8 @@ class NoteService {
   }
 
   Future<List<Note>> loadNotes() async {
-    final notesJson = _prefs.getString('notes');
-    final notes = json.decode(notesJson ?? '');
-    return notes.map<Note>((note) => Note.fromJson(note)).toList();
+    final notesJson = _prefs.getString('notes') ?? '[]';
+    return json.decode(notesJson).map<Note>((note) => Note.fromJson(note)).toList();
   }
 }
 

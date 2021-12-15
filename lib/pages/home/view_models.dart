@@ -25,44 +25,39 @@ class NoteListViewModel extends StateNotifier<List<Note>> {
     state = await _service.loadNotes();
 
     // TODO: User `_ref.listen()` instead?
-    final asyncValue = _ref.watch(connectivityServiceProvider);
+    // final asyncValue = _ref.watch(connectivityServiceProvider);
 
     // FIXME: Should I check the internet here or inside NotionDatabaseService?
-    asyncValue.whenData((value) async {
-      if (value == ConnectivityStatus.connected) {
-        _ref.read(isSyncingProvider.notifier).state = true;
+    // asyncValue.whenData((value) async {
+    //   if (value == ConnectivityStatus.connected) {
+    //     _ref.read(isSyncingProvider.notifier).state = true;
 
-        for (var i = 0; i < state.length; i++) {
-          if (!state[i].isSynced) {
-            try {
-              if (await NotionDatabaseService.createNotionPage(state[i])) {
-                state[i] = state[i].copyWith(isSynced: true);
-                await _service.saveNotes(state);
-              }
-            } catch (e) {
-              // TODO: Handle error, unsynced note, logging?
-              print(e);
-              continue;
-            }
-          }
-        }
-      }
+    //     for (var i = 0; i < state.length; i++) {
+    //       if (!state[i].isSynced) {
+    //         try {
+    //           if (await NotionDatabaseService.createNotionPage(state[i])) {
+    //             state[i] = state[i].copyWith(isSynced: true);
+    //             await _service.saveNotes(state);
+    //           }
+    //         } catch (e) {
+    //           // TODO: Handle error, unsynced note, logging?
+    //           print(e);
+    //           continue;
+    //         }
+    //       }
+    //     }
+    //   }
 
-      _ref.read(isSyncingProvider.notifier).state = false;
-    });
+    //   _ref.read(isSyncingProvider.notifier).state = false;
+    // });
   }
 
   Future<void> add(Note note) async {
     if (note.isEmpty()) return;
 
     try {
-      final hasNetwork = await _ref.read(connectivityServiceProvider.future);
-
-      if (hasNetwork == ConnectivityStatus.connected) {
-        if (await NotionDatabaseService.createNotionPage(note)) {
-          note = note.copyWith(isSynced: true);
-        }
-      }
+      final isCreated = await NotionDatabaseService.createNotionPage(note);
+      if (isCreated) note = note.copyWith(isSynced: true);
     } catch (e) {
       throw ('Printing out the message: $e');
     } finally {
