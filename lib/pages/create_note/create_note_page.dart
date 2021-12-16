@@ -8,6 +8,8 @@ import '../../features/note/models.dart';
 import '../home/view_models.dart';
 import 'view_models.dart';
 
+// TODO: Convert to `StatelessWidget` and use `Consumer` instead, `title` and `body` don't
+// have to rebuild.
 class CreateNotePage extends ConsumerWidget {
   const CreateNotePage({Key? key}) : super(key: key);
 
@@ -23,7 +25,8 @@ class CreateNotePage extends ConsumerWidget {
 
     final note = ref.watch(noteProvider);
     // FIXME: Doesn't rebuild only loading.
-    final asyncDB = ref.watch(notionDatabaseProvider);
+    // final asyncDB = ref.watch(notionDatabaseProvider);
+    final asyncDb = ref.watch(notionDatabaseProvider);
 
     final bool isEmptyLabels = note.dueString == null && note.priority == null && note.type == null;
 
@@ -64,7 +67,7 @@ class CreateNotePage extends ConsumerWidget {
                     behavior: HitTestBehavior.translucent,
                     onTap: () => _showMBS(
                       context,
-                      asyncDB.when(
+                      asyncDb.when(
                         data: (db) => _ListViewSearch(
                           tags: db.categories,
                           onComplete: (tags) =>
@@ -113,48 +116,48 @@ class CreateNotePage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () {
-                      _showMBS(
-                        context,
-                        asyncDB.when(
-                          data: (db) => _LabelsModal(
-                            dueStrings: db.dueStrings,
-                            priorities: db.priorities,
-                            types: db.types,
-                            onCompleted: (dueString, priority, type) => {
-                              ref.read(noteProvider.state).state = note.copyWith(
-                                dueString: dueString,
-                                priority: priority,
-                                type: type,
-                              ),
-                            },
-                          ),
-                          loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (_, __) => const Center(child: Text('Error')),
-                        ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const Text('Labels'),
-                        const SizedBox(width: 8),
-                        isEmptyLabels
-                            ? const _TagPropertyAddButton()
-                            : Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                                note.dueString != null
-                                    ? _TagProperty(tag: note.dueString!)
-                                    : Container(),
-                                note.priority != null
-                                    ? _TagProperty(tag: note.priority!)
-                                    : Container(),
-                                note.type != null ? _TagProperty(tag: note.type!) : Container(),
-                              ]),
-                      ],
-                    ),
-                  ),
+                  // GestureDetector(
+                  //   behavior: HitTestBehavior.translucent,
+                  //   onTap: () {
+                  //     _showMBS(
+                  //       context,
+                  //       asyncDB.when(
+                  //         data: (db) => _LabelsModal(
+                  //           dueStrings: db.dueStrings,
+                  //           priorities: db.priorities,
+                  //           types: db.types,
+                  //           onCompleted: (dueString, priority, type) => {
+                  //             ref.read(noteProvider.state).state = note.copyWith(
+                  //               dueString: dueString,
+                  //               priority: priority,
+                  //               type: type,
+                  //             ),
+                  //           },
+                  //         ),
+                  //         loading: () => const Center(child: CircularProgressIndicator()),
+                  //         error: (_, __) => const Center(child: Text('Error')),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Row(
+                  //     mainAxisSize: MainAxisSize.max,
+                  //     children: [
+                  //       const Text('Labels'),
+                  //       const SizedBox(width: 8),
+                  //       isEmptyLabels
+                  //           ? const _TagPropertyAddButton()
+                  //           : Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                  //               note.dueString != null
+                  //                   ? _TagProperty(tag: note.dueString!)
+                  //                   : Container(),
+                  //               note.priority != null
+                  //                   ? _TagProperty(tag: note.priority!)
+                  //                   : Container(),
+                  //               note.type != null ? _TagProperty(tag: note.type!) : Container(),
+                  //             ]),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -304,6 +307,8 @@ class _TagProperty extends StatelessWidget {
 
 // Source: https://karthikponnam.medium.com/flutter-search-in-listview-1ffa40956685
 // Source: https://www.kindacode.com/article/how-to-create-a-filter-search-listview-in-flutter
+// TODO: Add shimmer for local storage.
+// TODO: Add fade popping for web api.
 class _ListViewSearch extends StatefulWidget {
   const _ListViewSearch({
     Key? key,
