@@ -83,6 +83,12 @@ class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key}) : super(key: key);
 
   @override
+  // FIXME: [HIGH] Prevent this to rebuilt everytime I move to the Create Note page and after
+  // I created a page.
+  // * Tap on title field (both manual and `autofocus`)
+  // * Tap on Categories field
+  // * Finish choosing Categories
+  // * Finish creating note - `Consumer` should rebuild not this
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
 
@@ -99,24 +105,31 @@ class MyHomePage extends StatelessWidget {
         actions: [
           Consumer(
             builder: (context, ref, child) {
-              WidgetsBinding.instance?.addPostFrameCallback((_) {
-                ref.read(noteListProvider.notifier).init();
-              });
-              final notes = ref.watch(noteListProvider);
-              final asyncValue = ref.watch(connectivityServiceProvider);
-              final isSyncing = ref.watch(isSyncingProvider);
+              // final notes = ref.watch(noteListProvider);
+              final numberUnsyncedNotes = ref.watch(noteListProvider.notifier).numberUnsyncedNotes;
+              final syncAsyncValue = ref.watch(noteSyncProvider);
+              // final connectivityAsyncValue = ref.watch(connectivityServiceProvider);
+              // final isSyncing = ref.watch(isSyncingProvider);
+
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
-                  child: _SyncIndicator(
-                    notes: notes,
-                    status: asyncValue.when(
-                      data: (status) => status,
-                      loading: () => ConnectivityStatus.disconnected,
-                      error: (_, __) => ConnectivityStatus.disconnected,
-                    ),
-                    isSyncing: isSyncing,
+                  child: syncAsyncValue.when(
+                    data: (syncStatus) => _SyncIndicator(numberUnsyncedNotes, status: syncStatus),
+                    error: (_, __) => Text('Error',
+                        style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
+                    loading: () =>
+                        const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
                   ),
+                  // child: _SyncIndicator(
+                  //   notes: notes,
+                  //   status: asyncValue.when(
+                  //     data: (status) => status,
+                  //     loading: () => ConnectivityStatus.disconnected,
+                  //     error: (_, __) => ConnectivityStatus.disconnected,
+                  //   ),
+                  //   isSyncing: isSyncing,
+                  // ),
                 ),
               );
             },
@@ -137,6 +150,8 @@ class MyHomePage extends StatelessWidget {
                     : ListView.builder(
                         shrinkWrap: true,
                         itemCount: notes.length,
+                        // FIXME: Unhandled Exception: RangeError (index): Invalid value: Not in inclusive range 0..1: 2
+                        // FIXME: I don't think this is a "proper" way to delete a note.
                         itemBuilder: (context, index) => Dismissible(
                           key: Key(notes[index].id.toString()),
                           onDismissed: (direction) =>
@@ -172,22 +187,29 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
+// enum SyncStatus { synced, syncing, unsynced }
+
+// TODO: Add loading indicator (while stream is loading) not syncing.
 class _SyncIndicator extends StatelessWidget {
-  const _SyncIndicator({
-    Key? key,
-    required this.notes,
+  const _SyncIndicator(
+    this.numberUnsyncedNote, {
     required this.status,
-    this.isSyncing = false,
+    Key? key,
+    // this.connectivityStatus = ConnectivityStatus.disconnected,
+    // this.isSyncing = false,
   }) : super(key: key);
 
-  final List<Note> notes;
-  final ConnectivityStatus status;
-  final bool isSyncing;
+  final int numberUnsyncedNote;
+  // final ConnectivityStatus connectivityStatus;
+  // FIXME: Do I really need it? I only need it to indicate the user that the app is offline.
+  final SyncStatus status;
+  // final bool isSyncing;
+
+  bool get _isSynced =>
+      status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
 
   @override
   Widget build(BuildContext context) {
-    final unSyncNumber = notes.where((note) => !note.isSynced).length;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
       decoration: BoxDecoration(
@@ -199,11 +221,12 @@ class _SyncIndicator extends StatelessWidget {
           _buildSyncDot(),
           const SizedBox(width: 6),
           Text(
-              isSyncing
-                  ? 'Syncing... ($unSyncNumber)'
-                  : status == ConnectivityStatus.disconnected
-                      ? 'Unsynced ($unSyncNumber)'
-                      : 'Synced',
+              status.isSyncing
+                  ? 'Syncing... ($numberUnsyncedNote)'
+                  // : _isSynced
+                  : numberUnsyncedNote == 0
+                      ? 'Synced'
+                      : 'Unsynced ($numberUnsyncedNote)',
               style: Theme.of(context).textTheme.caption),
         ],
       ),
@@ -215,11 +238,12 @@ class _SyncIndicator extends StatelessWidget {
       width: 5,
       height: 5,
       decoration: BoxDecoration(
-        color: isSyncing
+        color: status.isSyncing
             ? Colors.yellow
-            : status == ConnectivityStatus.disconnected
-                ? Colors.red
-                : Colors.green,
+            // : _isSynced
+            : numberUnsyncedNote == 0
+                ? Colors.green
+                : Colors.red,
         shape: BoxShape.circle,
       ),
     );
