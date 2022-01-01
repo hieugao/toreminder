@@ -1,46 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../services/connectivity_service.dart';
 import '../../features/note/models.dart';
 import '../../features/note/services.dart';
-// import '../../services/connectivity_service.dart';
-
-// FIXME: Handle offline mode.
-final notionDatabaseProvider = FutureProvider<NotionDatabase>((ref) async {
-  final _service = ref.watch(notionDatabaseServiceProvider);
-
-  // var futureDB = _service.loadDatabase();
-
-  // try {
-  //   futureDB = _service.fetchDatabase();
-  //   _service.saveDatabase(await futureDB);
-  //   return futureDB;
-  // } catch (e) {
-  //   throw ("Can't fetch database");
-  // }
-
-  return _service.fetchDatabase();
-});
 
 final noteProvider = StateProvider<Note>((ref) => Note.initial());
 
-// TODO: Should I use StateProvider or FutureProvider instead?
-// class NotionDatabaseViewModel extends StateNotifier<NotionDatabase> {
-//   NotionDatabaseViewModel(this._read) : super(NotionDatabase());
+final notionDatabaseProvider = FutureProvider<NotionDatabase>((ref) async {
+  final _service = ref.watch(notionDatabaseServiceProvider);
 
-//   final Reader _read;
+  // FIXME: [LOW PRIORITY] So everytime `connectivityServiceProvider` changes, this will be
+  // re-called, I don't want that.
+  // But I don't think the internet connection will be changed a lot so...
+  var data = await _service.loadDatabase();
 
-//   NotionDatabaseService get _service => _read(notionDatabaseServiceProvider);
+  ref.watch(connectivityServiceProvider.future).then((value) async {
+    try {
+      if (value == ConnectivityStatus.connected && ref.watch(_isFetchedProvider) == false) {
+        data = await _service.fetchDatabase();
+        ref.read(_isFetchedProvider.state).state = true;
+        _service.saveDatabase(data);
+      }
+    } catch (e) {
+      return data;
+    }
+  });
 
-//   NotionDatabaseViewModel.init() async {
-//     state = await _service.loadDatabase();
+  return data;
+});
 
-//     try {
-//       state = await _service.fetchDatabase();
-//       _service.saveDatabase(state);
-//     } catch (e) {
-//       print(e);
-//     }
-
-//     print(state);
-//   }
-// }
+final _isFetchedProvider = StateProvider<bool>((ref) => false);

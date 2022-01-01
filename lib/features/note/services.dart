@@ -23,10 +23,9 @@ class NoteService {
   }
 
   Future<List<Note>> loadNotes() async {
-    final notesJson = _prefs.getString('notes');
     // FIXME: https://stackoverflow.com/questions/54466639/json-decode-unexpected-end-of-input-at-character-1
-    final notes = json.decode(notesJson ?? '');
-    return notes.map<Note>((note) => Note.fromJson(note)).toList();
+    final notesJson = _prefs.getString('notes') ?? '[]';
+    return json.decode(notesJson).map<Note>((note) => Note.fromJson(note)).toList();
   }
 }
 
