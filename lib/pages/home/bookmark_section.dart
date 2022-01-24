@@ -51,10 +51,13 @@ class _Tile extends StatelessWidget {
             const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
-              child: FadeInImage.memoryNetwork(
-                placeholder: _transparentImage,
-                image: bookmark.image,
-              ),
+              // FIXME: Handle image loading errors
+              // TODO: Add shimmer loading
+              // child: FadeInImage.memoryNetwork(
+              //   placeholder: _transparentImage,
+              //   image: bookmark.image,
+              // ),
+              child: Container(),
             ),
           ],
         ),

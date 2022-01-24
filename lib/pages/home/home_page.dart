@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
+import 'package:notion_capture/common/widgets.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 
@@ -116,10 +117,9 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8.0),
                   child: syncAsyncValue.when(
                     data: (syncStatus) => _SyncIndicator(numberUnsyncedNotes, status: syncStatus),
-                    error: (_, __) => Text('Error',
-                        style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
-                    loading: () =>
-                        const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
+                    error: (_, __) =>
+                        Text('Error', style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
+                    loading: () => const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
                   ),
                   // child: _SyncIndicator(
                   //   notes: notes,
@@ -154,8 +154,7 @@ class HomePage extends StatelessWidget {
                         // FIXME: I don't think this is a "proper" way to delete a note.
                         itemBuilder: (context, index) => Dismissible(
                           key: Key(notes[index].id.toString()),
-                          onDismissed: (direction) =>
-                              ref.read(noteListProvider.notifier).removeAt(index),
+                          onDismissed: (direction) => ref.read(noteListProvider.notifier).removeAt(index),
                           child: _NoteCard(note: notes[index], onTap: () {}),
                         ),
                       ),
@@ -205,13 +204,12 @@ class _SyncIndicator extends StatelessWidget {
   final SyncStatus status;
   // final bool isSyncing;
 
-  bool get _isSynced =>
-      status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
+  bool get _isSynced => status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.grey[700],
@@ -305,51 +303,78 @@ class _NoteCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(note.title, style: Theme.of(context).textTheme.subtitle1),
+
+                const SizedBox(height: 8),
+
+                // Note's labels.
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Flexible(flex: 5, child: _CategoriesBlock(categories: note.categories)),
-                    Row(children: [
-                      Text(
-                        note.createdAt != null ? timeago.format(note.createdAt!) : '',
-                        style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 5,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: note.isSynced ? Colors.green : Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ])
+                    for (var label in note.labels) ...[
+                      TagProperty(tag: label),
+                      const SizedBox(width: 4),
+                    ],
+
+                    const Spacer(),
+
+                    StackedWidgets(
+                      children: [
+                        note.dueString != null ? TagIcon(tag: note.dueString!, isSelected: true) : const SizedBox(),
+                        note.dueString != null ? TagIcon(tag: note.priority!, isSelected: true) : const SizedBox(),
+                      ],
+                    ),
+
+                    // note.dueString != null ? TagIcon(tag: note.dueString!, isSelected: true) : const SizedBox(),
+                    // Container(
+                    //   margin: const EdgeInsets.only(left: 4),
+                    //   child: note.dueString != null ? TagIcon(tag: note.priority!, isSelected: true) : const SizedBox(),
+                    // ),
+
+                    // Flexible(flex: 5, child: _CategoriesBlock(categories: note.labels)),
+                    // Row(children: [
+                    //   Text(
+                    //     note.createdAt != null ? timeago.format(note.createdAt!) : '',
+                    //     style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
+                    //   ),
+                    //   const SizedBox(width: 6),
+                    //   Container(
+                    //     width: 5,
+                    //     height: 5,
+                    //     decoration: BoxDecoration(
+                    //       color: note.isSynced ? Colors.green : Colors.red,
+                    //       shape: BoxShape.circle,
+                    //     ),
+                    //   ),
+                    // ])
                   ],
                 ),
+
                 const SizedBox(height: 8),
-                Text(note.title),
-                const SizedBox(height: 8),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _LabelsBlock(
-                        type: note.type, dueString: note.dueString, priority: note.priority),
-                    const SizedBox(width: 8),
+                    // _LabelsBlock(type: note.type, dueString: note.dueString, priority: note.priority),
                     Flexible(
                       child: Column(children: [
                         note.body.isEmpty
                             ? Text(
                                 note.body,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .apply(color: Colors.white38),
+                                style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
                               )
                             : Container(),
                       ]),
                     ),
+                    const Spacer(),
+                    note.createdAt != null
+                        ? Text(
+                            timeago.format(note.createdAt!),
+                            style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
+                          )
+                        : const SizedBox(),
                   ],
                 ),
               ],
@@ -396,16 +421,14 @@ class _CategoriesBlock extends StatelessWidget {
           ]));
   }
 
-  List<TextSpan> _buildCategoryWidget(BuildContext context, NotionTag category,
-      [bool isLast = false]) {
+  List<TextSpan> _buildCategoryWidget(BuildContext context, NotionTag category, [bool isLast = false]) {
     return [
       TextSpan(
         text: ' ' + category.content,
         style: Theme.of(context).textTheme.caption,
       ),
       !isLast
-          ? TextSpan(
-              text: ',', style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white))
+          ? TextSpan(text: ',', style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white))
           : const TextSpan(text: ''),
     ];
   }
@@ -441,8 +464,7 @@ class _LabelsBlock extends StatelessWidget {
           // ),
           child: Row(
             children: [
-              Text('Labels: ',
-                  style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38)),
+              Text('Labels: ', style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38)),
               ..._buildLabel(context, dueString),
               ..._buildLabel(context, priority),
               ..._buildLabel(context, type),
@@ -482,6 +504,46 @@ class _EmptyNotesIllustration extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white38),
         )
       ],
+    );
+  }
+}
+
+// Source https://www.youtube.com/watch?v=ut9CeTQRax0
+class StackedWidgets extends StatelessWidget {
+  final List<Widget> children;
+  final TextDirection direction;
+  final double size;
+  final double xShift;
+
+  const StackedWidgets({
+    Key? key,
+    required this.children,
+    this.direction = TextDirection.ltr,
+    this.size = 32,
+    this.xShift = 4,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final allItems = children
+        .asMap()
+        .map((index, item) {
+          final left = size - xShift;
+
+          final value = Container(
+            width: size,
+            height: size,
+            child: item,
+            margin: EdgeInsets.only(left: left * index),
+          );
+
+          return MapEntry(index, value);
+        })
+        .values
+        .toList();
+
+    return Stack(
+      children: direction == TextDirection.ltr ? allItems.reversed.toList() : allItems,
     );
   }
 }

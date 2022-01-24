@@ -10,8 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 
 final noteServiceProvider = Provider<NoteService>((ref) => throw UnimplementedError());
-final notionDatabaseServiceProvider =
-    Provider<NotionDatabaseService>((ref) => throw UnimplementedError());
+final notionDatabaseServiceProvider = Provider<NotionDatabaseService>((ref) => throw UnimplementedError());
 
 class NoteService {
   NoteService(this._prefs);
@@ -123,9 +122,9 @@ class NotionDatabaseService {
         },
         // note.categories.isNotEmpty ? 'Categories' : {'multi_select': note.categories}: {},
         // Conditionally add to Map: https://stackoverflow.com/a/65920396/16553764
-        if (note.categories.isNotEmpty)
-          "Categories": {
-            "multi_select": note.categories,
+        if (note.labels.isNotEmpty)
+          "Labels": {
+            "multi_select": note.labels,
           },
         if (note.dueString != null)
           'Due string': {
@@ -135,10 +134,10 @@ class NotionDatabaseService {
           'Priority': {
             'select': note.priority,
           },
-        if (note.type != null)
-          'Type': {
-            'select': note.type,
-          },
+        // if (note.type != null)
+        //   'Type': {
+        //     'select': note.type,
+        //   },
       },
       if (note.body.isNotEmpty)
         'children': [

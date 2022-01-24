@@ -16,10 +16,10 @@ class Note with _$Note {
     @Deprecated('Unused') required int id,
     @Default('') String title,
     @Default('') String body,
-    @Default([]) List<NotionTag> categories,
-    NotionTag? type,
+    @Default([]) List<NotionTag> labels,
     NotionTag? dueString,
     NotionTag? priority,
+    // NotionTag? type,
     DateTime? createdAt,
     @Default(false) bool isSynced,
     // TODO: Will be supported in the future.
@@ -30,7 +30,7 @@ class Note with _$Note {
 
   factory Note.fromJson(Map<String, dynamic> json) => _$NoteFromJson(json);
 
-  bool isEmpty() => title.isEmpty;
+  bool get isEmpty => title.isEmpty;
 }
 
 @freezed
@@ -40,10 +40,10 @@ class NotionDatabase with _$NotionDatabase {
   @CustomListNotionTagConverter()
   factory NotionDatabase({
     // TODO: Fix this annoying warning.
-    @JsonKey(name: 'Categories') @Default([]) List<NotionTag> categories,
+    @JsonKey(name: 'Labels') @Default([]) List<NotionTag> labels,
     @JsonKey(name: 'Due string') @Default([]) List<NotionTag> dueStrings,
     @JsonKey(name: 'Priority') @Default([]) List<NotionTag> priorities,
-    @JsonKey(name: 'Type') @Default([]) List<NotionTag> types,
+    // @JsonKey(name: 'Type') @Default([]) List<NotionTag> types,
     // TODO: Test an empty field.
   }) = _NotionDatabase;
 
@@ -52,8 +52,8 @@ class NotionDatabase with _$NotionDatabase {
   Map<String, dynamic> toJsonCustom() {
     return {
       'properties': {
-        'Categories': {
-          'multi_select': {'options': categories}
+        'Labels': {
+          'multi_select': {'options': labels}
         },
         'Due string': {
           'select': {'options': dueStrings}
@@ -61,9 +61,9 @@ class NotionDatabase with _$NotionDatabase {
         'Priority': {
           'select': {'options': priorities}
         },
-        'Type': {
-          'select': {'options': types}
-        }
+        // 'Type': {
+        //   'select': {'options': types}
+        // }
       },
     };
   }
