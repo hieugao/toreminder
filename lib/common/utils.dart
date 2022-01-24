@@ -1,5 +1,6 @@
 import 'dart:io';
 
+@Deprecated('Use connectivity_service.dart instead')
 Future<bool> hasNetwork() async {
   try {
     final result = await InternetAddress.lookup('example.com');
