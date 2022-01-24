@@ -136,7 +136,7 @@ class NoteListViewModel extends StateNotifier<List<Note>> {
   int get numberUnsyncedNotes => state.where((note) => !note.isSynced).length;
 
   Future<void> add(Note note) async {
-    if (note.isEmpty()) return;
+    // if (note.isEmpty()) return;
 
     try {
       final isCreated = await NotionDatabaseService.createNotionPage(note);

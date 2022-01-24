@@ -1,17 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:notion_capture/common/widgets.dart';
 
 import '../../features/note/models.dart';
 import '../home/view_models.dart';
-import 'view_models.dart';
+import './view_models.dart';
+import './widgets.dart';
 
 // TODO: Convert to `StatelessWidget` and use `Consumer` instead, `title` and `body` don't
 // have to rebuild.
 class CreateNotePage extends ConsumerWidget {
   const CreateNotePage({Key? key}) : super(key: key);
+
+  void _onPressed(BuildContext context, Note note, WidgetRef ref) {
+    if (!note.isEmpty) ref.read(noteListProvider.notifier).add(note);
+    Navigator.pop(context, note);
+    ref.read(noteProvider.state).state = Note.initial();
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,193 +37,233 @@ class CreateNotePage extends ConsumerWidget {
     // final asyncDB = ref.watch(notionDatabaseProvider);
     final asyncDb = ref.watch(notionDatabaseProvider);
 
-    final bool isEmptyLabels = note.dueString == null && note.priority == null && note.type == null;
+    final bool isEmptyTime = note.dueString == null && note.priority == null; // && note.type == null;
 
     print('Rebuilt check - Create Note page');
 
     return Scaffold(
-      appBar: AppBar(
-        // backwardsCompatibility: false,
-        systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.grey[850]),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: _TextEditingBlock(
-                // TODO: Will use controller when editing feature is implemented.
-                // controller: _titleController,
-                style: Theme.of(context).textTheme.headline6!,
-                onChanged: (value) =>
-                    ref.read(noteProvider.state).state = note.copyWith(title: value),
+      // appBar: AppBar(
+      //   // backwardsCompatibility: false,
+      //   // title: const Text('Create Note'),
+      //   systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.grey[850]),
+      //   automaticallyImplyLeading: false,
+      //   elevation: 0,
+      //   backgroundColor: Colors.transparent,
+      // ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 32, 16, 0),
+          child: Column(
+            children: [
+              // Title block.
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: _TextEditingBlock(
+                  // TODO: Will use controller when editing feature is implemented.
+                  // controller: _titleController,
+                  hintText: "Untitled",
+                  autofocus: true,
+                  style: Theme.of(context).textTheme.headline6!.copyWith(fontWeight: FontWeight.w500),
+                  onChanged: (value) => ref.read(noteProvider.state).state = note.copyWith(title: value),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: Colors.grey[800],
-              ),
-              child: Column(
-                children: [
-                  GestureDetector(
-                    // Source: https://stackoverflow.com/a/54850948/16553764
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () => _showMBS(
-                      context,
-                      asyncDb.when(
-                        data: (db) => _ListViewSearch(
-                          tags: db.categories,
-                          onComplete: (tags) =>
-                              ref.read(noteProvider.state).state = note.copyWith(categories: tags),
-                        ),
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (_, __) => const Center(child: Text('Error')),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const Text('Categories'),
-                        const SizedBox(width: 8),
-                        note.categories.isEmpty
-                            ? const _TagPropertyAddButton()
-                            : SizedBox(
-                                height: 24,
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.horizontal,
-                                  physics: const ClampingScrollPhysics(),
-                                  // physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: note.categories.length,
-                                  itemBuilder: (context, index) {
-                                    final tag = note.categories[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 4.0),
-                                      child: _TagProperty(
-                                        tag: tag,
-                                        // onDelete: () => ref.read(noteProvider.state).state =
-                                        //     note.copyWith(categories: note.categories.where((t) => t != tag).toList()),
-                                      ),
-                                    );
-                                  },
-                                  // children: [
-                                  //   for (final NotionTag tag in note.categories)
-                                  //     _TagProperty(tag: tag)
-                                  // ],
-                                ),
-                              ),
-                        // : Row(children: [
-                        //     for (final NotionTag tag in note.categories) _TagProperty(tag: tag),
-                        //   ]),
-                      ],
-                    ),
+
+              const SizedBox(height: 16),
+
+              // ! Labels Block.
+              _NoteProperty(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16), bottom: Radius.circular(4)),
+                tags: note.labels,
+                mbsChild: asyncDb.when(
+                  data: (db) => _LabelsListViewSearch(
+                    tags: db.labels,
+                    onCompleted: (tags) => ref.read(noteProvider.state).state = note.copyWith(labels: tags),
                   ),
-                  const SizedBox(height: 16),
-                  // GestureDetector(
-                  //   behavior: HitTestBehavior.translucent,
-                  //   onTap: () {
-                  //     _showMBS(
-                  //       context,
-                  //       asyncDB.when(
-                  //         data: (db) => _LabelsModal(
-                  //           dueStrings: db.dueStrings,
-                  //           priorities: db.priorities,
-                  //           types: db.types,
-                  //           onCompleted: (dueString, priority, type) => {
-                  //             ref.read(noteProvider.state).state = note.copyWith(
-                  //               dueString: dueString,
-                  //               priority: priority,
-                  //               type: type,
-                  //             ),
-                  //           },
-                  //         ),
-                  //         loading: () => const Center(child: CircularProgressIndicator()),
-                  //         error: (_, __) => const Center(child: Text('Error')),
-                  //       ),
-                  //     );
-                  //   },
-                  //   child: Row(
-                  //     mainAxisSize: MainAxisSize.max,
-                  //     children: [
-                  //       const Text('Labels'),
-                  //       const SizedBox(width: 8),
-                  //       isEmptyLabels
-                  //           ? const _TagPropertyAddButton()
-                  //           : Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                  //               note.dueString != null
-                  //                   ? _TagProperty(tag: note.dueString!)
-                  //                   : Container(),
-                  //               note.priority != null
-                  //                   ? _TagProperty(tag: note.priority!)
-                  //                   : Container(),
-                  //               note.type != null ? _TagProperty(tag: note.type!) : Container(),
-                  //             ]),
-                  //     ],
-                  //   ),
-                  // ),
-                ],
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Center(child: Text('Error')),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              margin: const EdgeInsets.all(0),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+
+              const SizedBox(height: 4),
+
+              // ! Due string.
+              _NoteProperty(
+                borderRadius: BorderRadius.circular(4),
+                tags: note.dueString != null ? [note.dueString!] : [],
+                mbsChild: asyncDb.when(
+                  data: (db) => _DueStringandPriorityMBS(
+                    dueStrings: db.dueStrings,
+                    priorities: db.priorities,
+                    onCompleted: (dueString, priority, type) => {
+                      ref.read(noteProvider.state).state = note.copyWith(
+                        dueString: dueString,
+                        priority: priority,
+                      ),
+                    },
+                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Center(child: Text('Error')),
+                ),
+                mbsHeightPercentage: 0.75,
+                icon: const Icon(FontAwesomeIcons.calendarWeek, size: 13),
+                label: 'Due string',
               ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
+
+              const SizedBox(height: 4),
+
+              // ! Priority.
+              _NoteProperty(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(16)),
+                tags: note.priority != null ? [note.priority!] : [],
+                mbsChild: asyncDb.when(
+                  data: (db) => _DueStringandPriorityMBS(
+                    dueStrings: db.dueStrings,
+                    priorities: db.priorities,
+                    onCompleted: (dueString, priority, type) => {
+                      ref.read(noteProvider.state).state = note.copyWith(
+                        dueString: dueString,
+                        priority: priority,
+                      ),
+                    },
+                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Center(child: Text('Error')),
+                ),
+                mbsHeightPercentage: 0.75,
+                icon: const Icon(FontAwesomeIcons.solidFlag, size: 13),
+                label: 'Priority',
+              ),
+
+              // Container(
+              //   padding: const EdgeInsets.all(16),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(16),
+              //     color: Colors.grey[800],
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       GestureDetector(
+              //         // Source: https://stackoverflow.com/a/54850948/16553764
+              //         behavior: HitTestBehavior.translucent,
+              //         onTap: () => _showMBS(
+              //           context,
+              //           asyncDb.when(
+              //             data: (db) => _ListViewSearch(
+              //               tags: db.categories,
+              //               onComplete: (tags) =>
+              //                   ref.read(noteProvider.state).state = note.copyWith(categories: tags),
+              //             ),
+              //             loading: () => const Center(child: CircularProgressIndicator()),
+              //             error: (_, __) => const Center(child: Text('Error')),
+              //           ),
+              //         ),
+              //         child: Row(
+              //           mainAxisSize: MainAxisSize.max,
+              //           children: [
+              //             const Text('Categories'),
+              //             const SizedBox(width: 8),
+              //             note.categories.isEmpty
+              //                 ? const _TagPropertyAddButton()
+              //                 : SizedBox(
+              //                     height: 24,
+              //                     child: ListView.builder(
+              //                       shrinkWrap: true,
+              //                       scrollDirection: Axis.horizontal,
+              //                       physics: const ClampingScrollPhysics(),
+              //                       // physics: const NeverScrollableScrollPhysics(),
+              //                       itemCount: note.categories.length,
+              //                       itemBuilder: (context, index) {
+              //                         final tag = note.categories[index];
+              //                         return Padding(
+              //                           padding: const EdgeInsets.only(right: 4.0),
+              //                           child: _TagProperty(
+              //                             tag: tag,
+              //                             // onDelete: () => ref.read(noteProvider.state).state =
+              //                             //     note.copyWith(categories: note.categories.where((t) => t != tag).toList()),
+              //                           ),
+              //                         );
+              //                       },
+              //                       // children: [
+              //                       //   for (final NotionTag tag in note.categories)
+              //                       //     _TagProperty(tag: tag)
+              //                       // ],
+              //                     ),
+              //                   ),
+              //             // : Row(children: [
+              //             //     for (final NotionTag tag in note.categories) _TagProperty(tag: tag),
+              //             //   ]),
+              //           ],
+              //         ),
+              //       ),
+              //       const SizedBox(height: 16),
+              //       // GestureDetector(
+              //       //   behavior: HitTestBehavior.translucent,
+              //       //   onTap: () {
+              //       //     _showMBS(
+              //       //       context,
+              //       //       asyncDB.when(
+              //       //         data: (db) => _LabelsModal(
+              //       //           dueStrings: db.dueStrings,
+              //       //           priorities: db.priorities,
+              //       //           types: db.types,
+              //       //           onCompleted: (dueString, priority, type) => {
+              //       //             ref.read(noteProvider.state).state = note.copyWith(
+              //       //               dueString: dueString,
+              //       //               priority: priority,
+              //       //               type: type,
+              //       //             ),
+              //       //           },
+              //       //         ),
+              //       //         loading: () => const Center(child: CircularProgressIndicator()),
+              //       //         error: (_, __) => const Center(child: Text('Error')),
+              //       //       ),
+              //       //     );
+              //       //   },
+              //       //   child: Row(
+              //       //     mainAxisSize: MainAxisSize.max,
+              //       //     children: [
+              //       //       const Text('Labels'),
+              //       //       const SizedBox(width: 8),
+              //       //       isEmptyLabels
+              //       //           ? const _TagPropertyAddButton()
+              //       //           : Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              //       //               note.dueString != null
+              //       //                   ? _TagProperty(tag: note.dueString!)
+              //       //                   : Container(),
+              //       //               note.priority != null
+              //       //                   ? _TagProperty(tag: note.priority!)
+              //       //                   : Container(),
+              //       //               note.type != null ? _TagProperty(tag: note.type!) : Container(),
+              //       //             ]),
+              //       //     ],
+              //       //   ),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
+
+              const SizedBox(height: 20),
+
+              // FIXME: Use Expanded instead!
+              // Note's content.
+              Container(
+                padding: const EdgeInsets.only(left: 8),
                 constraints: BoxConstraints(
                   minHeight: MediaQuery.of(context).size.height * 0.25,
                 ),
                 child: _TextEditingBlock(
-                  style: Theme.of(context).textTheme.bodyText1!,
-                  onChanged: (value) =>
-                      ref.read(noteProvider.state).state = note.copyWith(body: value),
+                  hintText: 'Enter note\'s content here...',
+                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.white70),
+                  onChanged: (value) => ref.read(noteProvider.state).state = note.copyWith(body: value),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ref.read(noteListProvider.notifier).add(note);
-          Navigator.pop(context, note);
-          ref.read(noteProvider.state).state = Note.initial();
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  dynamic _showMBS(BuildContext context, Widget child) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      elevation: 16,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        padding: const EdgeInsets.all(16),
-        child: child,
-        // child: asyncDB.when(
-        //   data: (db) => _ListViewSearch(
-        //     tags: db.categories,
-        //     onComplete: (tags) => ref.read(noteProvider.state).state =
-        //         note.copyWith(categories: tags),
-        //   ),
-        //   loading: () => const Center(child: CircularProgressIndicator()),
-        //   error: (_, __) => const Center(child: Text('Error')),
-        // ),
+        onPressed: () => _onPressed(context, note, ref),
+        child: Icon(note.title.isEmpty ? Icons.arrow_back : Icons.add),
       ),
     );
   }
@@ -222,11 +271,18 @@ class CreateNotePage extends ConsumerWidget {
 
 // Source: https://stackoverflow.com/a/52930197/16553764
 class _TextEditingBlock extends StatefulWidget {
-  const _TextEditingBlock({Key? key, required this.style, required this.onChanged})
-      : super(key: key);
+  const _TextEditingBlock({
+    Key? key,
+    required this.style,
+    required this.hintText,
+    required this.onChanged,
+    this.autofocus = false,
+  }) : super(key: key);
 
   final TextStyle style;
+  final String hintText;
   final Function(String) onChanged;
+  final bool autofocus;
 
   @override
   State<_TextEditingBlock> createState() => _TextEditingBlockState();
@@ -244,7 +300,7 @@ class _TextEditingBlockState extends State<_TextEditingBlock> {
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
 
-    _debounce = Timer(const Duration(milliseconds: 750), () => widget.onChanged(query));
+    _debounce = Timer(const Duration(milliseconds: 500), () => widget.onChanged(query));
   }
 
   @override
@@ -252,25 +308,97 @@ class _TextEditingBlockState extends State<_TextEditingBlock> {
     return TextField(
       // TODO: Will use controller when editing feature is implemented.
       // controller: _titleController,
+      autofocus: widget.autofocus,
       onChanged: _onSearchChanged,
       maxLines: null,
       style: widget.style,
       // Theme.of(context).textTheme.headline6,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         isDense: true,
-        contentPadding: EdgeInsets.all(0),
-        hintText: 'Write text here...',
+        contentPadding: const EdgeInsets.all(0),
+        hintText: widget.hintText, // 'Write text here...',
         border: InputBorder.none,
       ),
     );
   }
 }
 
-class _TagPropertyAddButton extends StatelessWidget {
-  const _TagPropertyAddButton({Key? key}) : super(key: key);
+class _NoteProperty extends StatelessWidget {
+  const _NoteProperty({
+    Key? key,
+    required this.borderRadius,
+    required this.tags,
+    required this.mbsChild,
+    this.mbsHeightPercentage = 0.85,
+    this.icon = const Icon(FontAwesomeIcons.tags, size: 12),
+    this.label = 'Labels',
+  }) : super(key: key);
+
+  final BorderRadiusGeometry borderRadius;
+  final List<NotionTag> tags;
+  final Widget mbsChild;
+  final double mbsHeightPercentage;
+  final Icon icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        color: Colors.grey[800],
+      ),
+      child: GestureDetector(
+        // Source: https://stackoverflow.com/a/54850948/16553764
+        behavior: HitTestBehavior.translucent,
+        onTap: () => _showMBS(context, mbsChild),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          // mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            // Icon.
+            Padding(padding: const EdgeInsets.only(right: 6.0), child: icon),
+
+            // Label.
+            Flexible(flex: 250, fit: FlexFit.tight, child: Text(label)),
+
+            // Tag.
+            tags.isEmpty
+                ? _buildTagPropertyAddButton()
+                : Flexible(
+                    flex: 550,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        height: 24,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          physics: const ClampingScrollPhysics(),
+                          // physics: const NeverScrollableScrollPhysics(),
+                          itemCount: tags.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 4.0),
+                              child: TagProperty(
+                                tag: tags[index],
+                                // onDelete: () => ref.read(noteProvider.state).state =
+                                //     note.copyWith(categories: note.categories.where((t) => t != tag).toList()),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagPropertyAddButton() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -279,27 +407,28 @@ class _TagPropertyAddButton extends StatelessWidget {
       child: const Icon(Icons.add),
     );
   }
-}
 
-class _TagProperty extends StatelessWidget {
-  const _TagProperty({
-    Key? key,
-    required this.tag,
-  }) : super(key: key);
-
-  final NotionTag tag;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: tag.color.bg!.withOpacity(0.2),
+  dynamic _showMBS(BuildContext context, Widget child) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      elevation: 16,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Text(
-        tag.name,
-        style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.fg),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * mbsHeightPercentage,
+        padding: const EdgeInsets.all(16),
+        child: child,
+        // child: asyncDB.when(
+        //   data: (db) => _ListViewSearch(
+        //     tags: db.categories,
+        //     onComplete: (tags) => ref.read(noteProvider.state).state =
+        //         note.copyWith(categories: tags),
+        //   ),
+        //   loading: () => const Center(child: CircularProgressIndicator()),
+        //   error: (_, __) => const Center(child: Text('Error')),
+        // ),
       ),
     );
   }
@@ -309,26 +438,26 @@ class _TagProperty extends StatelessWidget {
 // Source: https://www.kindacode.com/article/how-to-create-a-filter-search-listview-in-flutter
 // TODO: Add shimmer for local storage.
 // TODO: Add fade popping for web api.
-class _ListViewSearch extends StatefulWidget {
-  const _ListViewSearch({
+class _LabelsListViewSearch extends StatefulWidget {
+  const _LabelsListViewSearch({
     Key? key,
     required this.tags,
-    required this.onComplete,
+    required this.onCompleted,
   }) : super(key: key);
 
   final List<NotionTag> tags;
-  final Function(List<NotionTag>) onComplete;
+  final Function(List<NotionTag>) onCompleted;
 
   @override
-  _ListViewSearchState createState() => _ListViewSearchState();
+  _LabelsListViewSearchState createState() => _LabelsListViewSearchState();
 }
 
-class _ListViewSearchState extends State<_ListViewSearch> {
+class _LabelsListViewSearchState extends State<_LabelsListViewSearch> {
   TextEditingController editingController = TextEditingController();
 
   // late List<String> _tagNames;
   List<NotionTag> _foundTags = [];
-  List<NotionTag> _selectedTags = [];
+  final List<NotionTag> _selectedTags = [];
 
   @override
   void initState() {
@@ -338,14 +467,12 @@ class _ListViewSearchState extends State<_ListViewSearch> {
     super.initState();
   }
 
-  // * Don't have much of items so I'm not worry too much about performance.
+  // * Don't have much of items so I'm not worry too much about the performance.
   void _filter(String keyword) {
     if (keyword.isEmpty) {
       setState(() => _foundTags = widget.tags);
     } else {
-      final results = widget.tags
-          .where((tag) => tag.name.toLowerCase().contains(keyword.toLowerCase()))
-          .toList();
+      final results = widget.tags.where((tag) => tag.name.toLowerCase().contains(keyword.toLowerCase())).toList();
       setState(() => _foundTags = results);
     }
   }
@@ -359,114 +486,178 @@ class _ListViewSearchState extends State<_ListViewSearch> {
   }
 
   // TODO: Add support for `pop` also.
-  void _onComplete() {
-    widget.onComplete(_selectedTags);
-    Navigator.of(context).pop();
-  }
+  // void _onComplete() {
+  //   widget.onCompleted(_selectedTags);
+  //   Navigator.of(context).pop();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Column(
-          // mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) {
-                      _filter(value);
-                    },
-                    controller: editingController,
-                    textAlignVertical: TextAlignVertical.center,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[800],
-                      focusColor: Theme.of(context).colorScheme.primaryVariant,
-                      // fillColor: Colors.white,
-                      // labelText: "Search",
-                      hintText: "Search",
-                      isDense: true,
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                      // border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(25.0))),
-                      // border: InputBorder.none,
-                    ),
-                  ),
-                ),
-                if (_selectedTags.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _selectedTags.length.toString(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText1!
-                          .copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                  ),
-                ] else
-                  const SizedBox(),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _foundTags.length,
-                itemBuilder: (context, index) {
-                  final emoji = _foundTags[index].emoji;
+    return Stack(children: [
+      Column(children: <Widget>[
+        const SizedBox(height: 12),
 
-                  return ListTile(
-                    tileColor: _selectedTags.contains(_foundTags[index])
-                        ? _foundTags[index].color.bg!.withOpacity(0.2)
-                        : null,
-                    leading: emoji != null ? Text(emoji) : const SizedBox(),
-                    title: Text(_foundTags[index].content),
-                    onTap: () => _onTap(_foundTags[index]),
-                  );
-                },
+        Row(children: [
+          // Search bar.
+          Expanded(
+            child: TextField(
+              onChanged: _filter,
+              controller: editingController,
+              textAlignVertical: TextAlignVertical.center,
+              style: Theme.of(context).textTheme.subtitle2,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey[900],
+                focusColor: Theme.of(context).colorScheme.primaryVariant,
+                // fillColor: Colors.white,
+                // labelText: "Search",
+                hintText: "Search tags...",
+                hintStyle: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.white38),
+                isDense: true,
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                // border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(25.0))),
+                // border: InputBorder.none,
               ),
             ),
-          ],
+          ),
+
+          // Number of selected tag.
+          // if (_selectedTags.isNotEmpty) ...[
+          //   const SizedBox(width: 8),
+          //   Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          //     decoration: BoxDecoration(
+          //       color: Colors.grey[800],
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //     child: Text(
+          //       _selectedTags.length.toString(),
+          //       style: Theme.of(context).textTheme.bodyText1!.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+          //     ),
+          //   ),
+          // ] else
+          //   const SizedBox(),
+        ]),
+
+        const SizedBox(height: 12),
+
+        // Tag list.
+        Expanded(
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: _foundTags.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 6),
+            itemBuilder: (context, index) {
+              final emoji = _foundTags[index].emoji;
+
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                minLeadingWidth: 16,
+                tileColor: _selectedTags.contains(_foundTags[index]) ? Colors.grey.shade900.withOpacity(0.67) : null,
+                // _selectedTags.contains(_foundTags[index]) ? _foundTags[index].color.bg!.withOpacity(0.2) : null,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+
+                leading: emoji != null
+                    ? Text(emoji)
+                    : Checkbox(
+                        checkColor: Colors.orange.shade500,
+                        // fillColor:  // MaterialStateProperty.resolveWith(Colors.transparent),
+                        activeColor: Colors.transparent,
+                        value: _selectedTags.contains(_foundTags[index]),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        onChanged: (bool? value) {
+                          // setState(() {
+                          //   isChecked = value!;
+                          // });
+                        },
+                      ),
+                title: Transform.translate(
+                  offset: const Offset(-16, 0),
+                  child: Text(
+                    _foundTags[index].content,
+                    style: Theme.of(context).textTheme.subtitle1!.copyWith(color: _foundTags[index].color.fg),
+                  ),
+                ),
+                onTap: () => _onTap(_foundTags[index]),
+              );
+            },
+          ),
         ),
-        Positioned(
+      ]),
+
+      // Complete button.
+      Positioned(
           bottom: MediaQuery.of(context).viewInsets.bottom,
           left: 0,
           right: 0,
-          child: ElevatedButton(
-            style: ButtonStyle(
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                // side: BorderSide(color: Colors.red)
-              ),
-            )),
-            onPressed: _onComplete,
-            child: const Text("Complete"),
+          child: _CompleteAndCancleButtons(onCompleted: () {
+            widget.onCompleted(_selectedTags);
+            Navigator.of(context).pop();
+          }, onCancel: () {
+            // widget.onCompleted([]);
+            Navigator.of(context).pop();
+          })),
+    ]);
+  }
+}
+
+class _CompleteAndCancleButtons extends StatelessWidget {
+  const _CompleteAndCancleButtons({
+    Key? key,
+    required this.onCompleted,
+    required this.onCancel,
+  }) : super(key: key);
+
+  final VoidCallback onCompleted;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(48, 40),
+            padding: const EdgeInsets.symmetric(horizontal: 48),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
+          onPressed: onCompleted,
+          child: Text(
+            "Complete",
+            style: Theme.of(context).textTheme.button!.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 12),
+        OutlinedButton(
+          onPressed: onCancel,
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(48, 40),
+            side: const BorderSide(color: Colors.white54, width: 2),
+            // padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+          child: const Icon(FontAwesomeIcons.times, size: 16, color: Colors.white70),
         ),
       ],
     );
   }
 }
 
-class _LabelsModal extends StatefulWidget {
-  const _LabelsModal({
+class _DueStringandPriorityMBS extends StatefulWidget {
+  const _DueStringandPriorityMBS({
     Key? key,
     required this.dueStrings,
     required this.priorities,
-    required this.types,
+    // required this.types,
     // this.dueString,
     // this.priority,
     // this.type,
@@ -475,70 +666,93 @@ class _LabelsModal extends StatefulWidget {
 
   final List<NotionTag> dueStrings;
   final List<NotionTag> priorities;
-  final List<NotionTag> types;
+  // final List<NotionTag> types;
   // final NotionTag? dueString;
   // final NotionTag? priority;
   // final NotionTag? type;
   final Function(NotionTag?, NotionTag?, NotionTag?) onCompleted;
 
   @override
-  State<_LabelsModal> createState() => _LabelsModalState();
+  State<_DueStringandPriorityMBS> createState() => _DueStringandPriorityMBSState();
 }
 
-class _LabelsModalState extends State<_LabelsModal> {
-  NotionTag? _dueString;
-  NotionTag? _priority;
+class _DueStringandPriorityMBSState extends State<_DueStringandPriorityMBS> {
+  int _dueStringIndex = 0;
+  int _priorityIndex = 0;
   NotionTag? _type;
 
   @override
   void initState() {
     super.initState();
+    // TODO:
     // _dueString = widget.dueString;
     // _priority = widget.priority;
     // _type = widget.type;
   }
 
   void _onCompleted() {
-    widget.onCompleted(_dueString, _priority, _type);
+    widget.onCompleted(widget.dueStrings[_dueStringIndex], widget.priorities[_priorityIndex], _type);
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      // height: MediaQuery.of(context).size.height * 0.85,
       padding: const EdgeInsets.all(16),
-      child: ListView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Lorem ipsum how uina supoin'),
-          const SizedBox(height: 16),
-          const Text('Due string'),
-          const SizedBox(height: 4),
-          _GridTagLabel(
-            tags: widget.dueStrings,
-            onTap: (tag) => setState(() => _dueString = tag),
-            // onTap: (tag) => ref.read(noteProvider.state).state = note.copyWith(dueString: tag),
+          // Due string block.
+          Text('Due string', style: Theme.of(context).textTheme.subtitle1),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.separated(
+              physics: const NeverScrollableScrollPhysics(),
+              // shrinkWrap: true,
+              itemCount: widget.dueStrings.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 4),
+              itemBuilder: (context, index) {
+                return _TagListTile(
+                  onTap: () => setState(() => _dueStringIndex = index),
+                  tag: widget.dueStrings[index],
+                  isSelected: _dueStringIndex == index,
+                );
+              },
+            ),
           ),
+
           const SizedBox(height: 16),
-          const Text('Due string'),
-          const SizedBox(height: 4),
-          _GridTagLabel(
-            tags: widget.priorities,
-            onTap: (tag) => setState(() => _priority = tag),
-            // onTap: (tag) => ref.read(noteProvider.state).state = note.copyWith(priority: tag),
+
+          // Priority block.
+          Text('Priority', style: Theme.of(context).textTheme.subtitle1),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.separated(
+              physics: const NeverScrollableScrollPhysics(),
+              // shrinkWrap: true,
+              itemCount: widget.priorities.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 4),
+              itemBuilder: (context, index) {
+                return _TagListTile(
+                  onTap: () => setState(() => _priorityIndex = index),
+                  tag: widget.priorities[index],
+                  isSelected: _priorityIndex == index,
+                );
+              },
+            ),
           ),
+
           const SizedBox(height: 16),
-          const Text('Due string'),
-          const SizedBox(height: 4),
-          _GridTagLabel(
-            tags: widget.types,
-            // onTap: (tag) => ref.read(noteProvider.state).state = note.copyWith(type: tag),
-            onTap: (tag) => setState(() => _type = tag),
+
+          // Confimation block.
+          _CompleteAndCancleButtons(
+            onCompleted: () {
+              widget.onCompleted(widget.dueStrings[_dueStringIndex], widget.priorities[_priorityIndex], _type);
+              Navigator.of(context).pop();
+            },
+            onCancel: () => Navigator.of(context).pop(),
           ),
-          TextButton(
-            onPressed: _onCompleted,
-            child: Text('Complete'),
-          )
         ],
       ),
     );
@@ -576,98 +790,130 @@ class _LabelsModalState extends State<_LabelsModal> {
   }
 }
 
-class _GridTagLabel extends StatefulWidget {
-  const _GridTagLabel({
+// class _GridTagLabel extends StatefulWidget {
+//   const _GridTagLabel({
+//     Key? key,
+//     required this.tags,
+//     required this.onTap,
+//   }) : super(key: key);
+
+//   final List<NotionTag> tags;
+//   final Function(NotionTag) onTap;
+
+//   @override
+//   State<_GridTagLabel> createState() => _GridTagLabelState();
+// }
+
+// class _GridTagLabelState extends State<_GridTagLabel> {
+//   NotionTag? _selectedTag;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // return Container(
+//     //   padding: const EdgeInsets.all(8),
+//     //   decoration: BoxDecoration(
+//     //     borderRadius: BorderRadius.circular(16),
+//     //     color: Colors.grey[800],
+//     //   ),
+//     //   child: GridView.count(
+//     //     physics: const NeverScrollableScrollPhysics(),
+//     //     crossAxisCount: 3,
+//     //     children: tags.map((tag) => _TagLabel(tag: tag, onTap: onTap)).toList(),
+//     //   ),
+//     // );
+//     return GridView.builder(
+//       shrinkWrap: true,
+//       physics: const NeverScrollableScrollPhysics(),
+//       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//         crossAxisCount: 4,
+//       ),
+//       itemCount: widget.tags.length,
+//       itemBuilder: (context, index) {
+//         return _TagLabel(
+//           tag: widget.tags[index],
+//           isSelected: _selectedTag == widget.tags[index],
+//           emojiOnly: true,
+//           onTap: (tag) {
+//             setState(() => _selectedTag = widget.tags[index]);
+//             widget.onTap(tag);
+//           },
+//         );
+//       },
+//     );
+//   }
+// }
+
+// @Deprecated('')
+// class _TagLabel extends StatelessWidget {
+//   const _TagLabel({
+//     Key? key,
+//     required this.tag,
+//     required this.onTap,
+//     this.isSelected = false,
+//     this.emojiOnly = false,
+//   }) : super(key: key);
+
+//   final NotionTag tag;
+//   final Function(NotionTag) onTap;
+//   final bool isSelected;
+//   final bool emojiOnly;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: () => onTap(tag),
+//       child: Row(
+//         children: [
+//           Container(
+//             padding: const EdgeInsets.all(6),
+//             decoration: BoxDecoration(
+//               borderRadius: BorderRadius.circular(14),
+//               color: isSelected ? tag.color.fg.withOpacity(0.6) : Colors.transparent,
+//               border: Border.all(color: tag.color.fg.withOpacity(0.6), width: 2),
+//             ),
+//             child: Text(
+//               tag.emoji ?? '',
+//               style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.fg),
+//             ),
+//           ),
+//           if (!emojiOnly) ...[
+//             const SizedBox(width: 16),
+//             Text(tag.content, style: Theme.of(context).textTheme.bodyText2),
+//           ] else
+//             const SizedBox(),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+class _TagListTile extends StatelessWidget {
+  const _TagListTile({
     Key? key,
-    required this.tags,
     required this.onTap,
-  }) : super(key: key);
-
-  final List<NotionTag> tags;
-  final Function(NotionTag) onTap;
-
-  @override
-  State<_GridTagLabel> createState() => _GridTagLabelState();
-}
-
-class _GridTagLabelState extends State<_GridTagLabel> {
-  NotionTag? _selectedTag;
-
-  @override
-  Widget build(BuildContext context) {
-    // return Container(
-    //   padding: const EdgeInsets.all(8),
-    //   decoration: BoxDecoration(
-    //     borderRadius: BorderRadius.circular(16),
-    //     color: Colors.grey[800],
-    //   ),
-    //   child: GridView.count(
-    //     physics: const NeverScrollableScrollPhysics(),
-    //     crossAxisCount: 3,
-    //     children: tags.map((tag) => _TagLabel(tag: tag, onTap: onTap)).toList(),
-    //   ),
-    // );
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-      ),
-      itemCount: widget.tags.length,
-      itemBuilder: (context, index) {
-        return _TagLabel(
-          tag: widget.tags[index],
-          isSelected: _selectedTag == widget.tags[index],
-          emojiOnly: true,
-          onTap: (tag) {
-            setState(() => _selectedTag = widget.tags[index]);
-            widget.onTap(tag);
-          },
-        );
-      },
-    );
-  }
-}
-
-class _TagLabel extends StatelessWidget {
-  const _TagLabel({
-    Key? key,
     required this.tag,
-    required this.onTap,
     this.isSelected = false,
-    this.emojiOnly = false,
   }) : super(key: key);
 
+  final VoidCallback onTap;
   final NotionTag tag;
-  final Function(NotionTag) onTap;
   final bool isSelected;
-  final bool emojiOnly;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onTap(tag),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: isSelected ? tag.color.fg.withOpacity(0.6) : Colors.grey[800],
-            ),
-            child: Text(
-              tag.emoji ?? '',
-              style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.fg),
-            ),
-          ),
-          if (!emojiOnly) ...[
-            const SizedBox(width: 6),
-            Text(tag.content,
-                style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.fg)),
-          ] else
-            const SizedBox(),
-        ],
-      ),
+    return ListTile(
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+      contentPadding: const EdgeInsets.only(left: 8),
+      tileColor: isSelected ? Colors.grey.shade900.withOpacity(0.67) : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      leading: TagIcon(tag: tag, isSelected: isSelected),
+      title: Text(tag.content,
+          style: Theme.of(context)
+              .textTheme
+              .bodyText2!
+              .copyWith(color: tag.color.fg, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      onTap: onTap,
+      // onTap: () => setState(() => _dueStringIndex = index),
     );
   }
 }
