@@ -1,11 +1,12 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:notion_capture/common/widgets.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter/material.dart';
 
 import '../../common/constants.dart' show Routes;
 import '../../features/note/models.dart';
@@ -13,72 +14,6 @@ import '../../services/connectivity_service.dart';
 
 import 'bookmark_section.dart';
 import 'view_models.dart';
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   late final Future<List<Note>> _futureNotes;
-//   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-//   ConnectivityResult _connectionStatus = ConnectivityResult.none;
-//   bool _isSyncing = false;
-//   List<Note> _notes = [];
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _init();
-//     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) {
-//       setState(() => _connectionStatus = result);
-//       _syncNotes(result);
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _connectivitySubscription.cancel();
-//     super.dispose();
-//   }
-
-//   Future<void> _init() async {
-//     // _futureNotes = _NoteRepository.getNotes();
-//     _futureNotes = HomeRepository.getNotes();
-//     final noteList = await _futureNotes;
-
-//     setState(() => _notes = noteList);
-//   }
-
-//   Future<void> _syncNotes(ConnectivityResult result) async {
-//     // final ConnectivityResult result = await Connectivity().checkConnectivity();
-//     if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
-//       setState(() => _isSyncing = true);
-
-//       for (var i = 0; i < _notes.length; i++) {
-//         if (!_notes[i].isSynced) {
-//           try {
-//             final isCreated = await CreateNoteRepository.createNotionPage(_notes[i]);
-
-//             if (isCreated) {
-//               setState(() => _notes[i] = _notes[i].copyWith(isSynced: true));
-//               HomeRepository.saveNotes(_notes);
-//             }
-//           } catch (e) {
-//             // TODO: Handle error, unsynced note, logging?
-//             print(e);
-//             continue;
-//           }
-//         }
-//       }
-
-//       setState(() => _isSyncing = false);
-//     }
-
-//     HomeRepository.saveNotes(_notes);
-//   }
-
-//   void _awaitReturnValueFromSecondScreen() async {
-//     final result = await Navigator.pushNamed(context, Routes.createNote);
-//     // Navigator.pushNamed(context, Routes.createNote),
-//     setState(() => _notes.add(result as Note));
-//     NoteService.saveNotes(_notes);
-//   }
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -103,38 +38,27 @@ class HomePage extends StatelessWidget {
           'Notes',
           style: Theme.of(context).textTheme.headline6,
         ),
-        actions: [
-          Consumer(
-            builder: (context, ref, child) {
-              // final notes = ref.watch(noteListProvider);
-              final numberUnsyncedNotes = ref.watch(noteListProvider.notifier).numberUnsyncedNotes;
-              final syncAsyncValue = ref.watch(noteSyncProvider);
-              // final connectivityAsyncValue = ref.watch(connectivityServiceProvider);
-              // final isSyncing = ref.watch(isSyncingProvider);
+        // actions: [
+        //   Consumer(
+        //     builder: (context, ref, child) {
+        //       final numberUnsyncedNotes = ref.watch(noteListProvider.notifier).numberUnsyncedNotes;
+        //       final syncAsyncValue = ref.watch(noteSyncProvider);
 
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: syncAsyncValue.when(
-                    data: (syncStatus) => _SyncIndicator(numberUnsyncedNotes, status: syncStatus),
-                    error: (_, __) =>
-                        Text('Error', style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
-                    loading: () => const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
-                  ),
-                  // child: _SyncIndicator(
-                  //   notes: notes,
-                  //   status: asyncValue.when(
-                  //     data: (status) => status,
-                  //     loading: () => ConnectivityStatus.disconnected,
-                  //     error: (_, __) => ConnectivityStatus.disconnected,
-                  //   ),
-                  //   isSyncing: isSyncing,
-                  // ),
-                ),
-              );
-            },
-          )
-        ],
+        //       return Center(
+        //         child: Padding(
+        //           padding: const EdgeInsets.only(right: 8.0),
+        //           child: syncAsyncValue.when(
+        //             data: (syncStatus) => _SyncIndicator(numberUnsyncedNotes, status: syncStatus),
+        //             error: (_, __) => Text('Error',
+        //                 style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
+        //             loading: () =>
+        //                 const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
+        //           ),
+        //         ),
+        //       );
+        //     },
+        //   )
+        // ],
       ),
       body: Consumer(
         builder: (context, ref, child) {
@@ -144,7 +68,7 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(children: <Widget>[
               Container(
-                constraints: BoxConstraints(maxHeight: height * 0.5),
+                // constraints: BoxConstraints(maxHeight: height * 0.5),
                 child: notes.isEmpty
                     ? const Center(child: _EmptyNotesIllustration())
                     : ListView.builder(
@@ -154,19 +78,12 @@ class HomePage extends StatelessWidget {
                         // FIXME: I don't think this is a "proper" way to delete a note.
                         itemBuilder: (context, index) => Dismissible(
                           key: Key(notes[index].id.toString()),
-                          onDismissed: (direction) => ref.read(noteListProvider.notifier).removeAt(index),
+                          onDismissed: (direction) =>
+                              ref.read(noteListProvider.notifier).removeAt(index),
                           child: _NoteCard(note: notes[index], onTap: () {}),
                         ),
                       ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 6.0, top: 12.0, bottom: 8.0),
-                child: Text(
-                  'Bookmarks',
-                  style: Theme.of(context).textTheme.headline6,
-                ),
-              ),
-              const Expanded(child: BookmarkSection()),
             ]),
           );
         },
@@ -175,9 +92,6 @@ class HomePage extends StatelessWidget {
         return FloatingActionButton(
           onPressed: () async {
             Navigator.pushNamed(context, Routes.createNote);
-            // _awaitReturnValueFromSecondScreen(), // Navigator.pushNamed(context, Routes.createNote),
-            // final result = await Navigator.pushNamed(context, Routes.createNote);
-            // ref.read(noteListProvider.notifier).add;
           },
           child: const Icon(Icons.add),
         );
@@ -204,7 +118,8 @@ class _SyncIndicator extends StatelessWidget {
   final SyncStatus status;
   // final bool isSyncing;
 
-  bool get _isSynced => status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
+  bool get _isSynced =>
+      status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
 
   @override
   Widget build(BuildContext context) {
@@ -262,31 +177,6 @@ class _NoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      // child: Slidable(
-      //   // No need, because Dismissible isn't used.
-      //   // key: Key(note.id.toString()),
-      //   actionPane: SlidableDrawerActionPane(),
-      //   actionExtentRatio: 0.25,
-      //   dismissal: SlidableDismissal(
-      //     child: SlidableDrawerDismissal(),
-      //     dismissThresholds: <SlideActionType, double>{SlideActionType.primary: 1.0},
-      //     onDismissed: (direction) {
-      //       if (direction == SlideActionType.secondary)
-      //         setState(() {
-      //           context.read(noteProvider.notifier).removeNote(note);
-      //         });
-      //     },
-      //   ),
-      //   actions: <Widget>[PinNoteAction(note, setState)],
-      //   secondaryActions: <Widget>[DeleteNoteAction(note, setState)],
-      //   child: Card(
-      //     elevation: 0,
-      //     child: Padding(
-      //       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-      //       child: _body(context),
-      //     ),
-      //   ),
-      // ),
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -316,38 +206,17 @@ class _NoteCard extends StatelessWidget {
                       TagProperty(tag: label),
                       const SizedBox(width: 4),
                     ],
-
                     const Spacer(),
-
                     StackedWidgets(
                       children: [
-                        note.dueString != null ? TagIcon(tag: note.dueString!, isSelected: true) : const SizedBox(),
-                        note.dueString != null ? TagIcon(tag: note.priority!, isSelected: true) : const SizedBox(),
+                        note.dueString != null
+                            ? TagIcon(tag: note.dueString!, isSelected: true)
+                            : const SizedBox(),
+                        note.dueString != null
+                            ? TagIcon(tag: note.priority!, isSelected: true)
+                            : const SizedBox(),
                       ],
                     ),
-
-                    // note.dueString != null ? TagIcon(tag: note.dueString!, isSelected: true) : const SizedBox(),
-                    // Container(
-                    //   margin: const EdgeInsets.only(left: 4),
-                    //   child: note.dueString != null ? TagIcon(tag: note.priority!, isSelected: true) : const SizedBox(),
-                    // ),
-
-                    // Flexible(flex: 5, child: _CategoriesBlock(categories: note.labels)),
-                    // Row(children: [
-                    //   Text(
-                    //     note.createdAt != null ? timeago.format(note.createdAt!) : '',
-                    //     style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
-                    //   ),
-                    //   const SizedBox(width: 6),
-                    //   Container(
-                    //     width: 5,
-                    //     height: 5,
-                    //     decoration: BoxDecoration(
-                    //       color: note.isSynced ? Colors.green : Colors.red,
-                    //       shape: BoxShape.circle,
-                    //     ),
-                    //   ),
-                    // ])
                   ],
                 ),
 
@@ -363,7 +232,10 @@ class _NoteCard extends StatelessWidget {
                             ? Text(
                                 note.body,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption!
+                                    .apply(color: Colors.white38),
                               )
                             : Container(),
                       ]),
@@ -372,7 +244,8 @@ class _NoteCard extends StatelessWidget {
                     note.createdAt != null
                         ? Text(
                             timeago.format(note.createdAt!),
-                            style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
+                            style:
+                                Theme.of(context).textTheme.caption!.apply(color: Colors.white38),
                           )
                         : const SizedBox(),
                   ],
@@ -421,14 +294,16 @@ class _CategoriesBlock extends StatelessWidget {
           ]));
   }
 
-  List<TextSpan> _buildCategoryWidget(BuildContext context, NotionTag category, [bool isLast = false]) {
+  List<TextSpan> _buildCategoryWidget(BuildContext context, NotionTag category,
+      [bool isLast = false]) {
     return [
       TextSpan(
         text: ' ' + category.content,
         style: Theme.of(context).textTheme.caption,
       ),
       !isLast
-          ? TextSpan(text: ',', style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white))
+          ? TextSpan(
+              text: ',', style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.white))
           : const TextSpan(text: ''),
     ];
   }
@@ -464,7 +339,8 @@ class _LabelsBlock extends StatelessWidget {
           // ),
           child: Row(
             children: [
-              Text('Labels: ', style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38)),
+              Text('Labels: ',
+                  style: Theme.of(context).textTheme.caption!.apply(color: Colors.white38)),
               ..._buildLabel(context, dueString),
               ..._buildLabel(context, priority),
               ..._buildLabel(context, type),
