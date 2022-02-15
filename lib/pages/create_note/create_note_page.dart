@@ -16,7 +16,7 @@ class CreateNotePage extends ConsumerWidget {
   const CreateNotePage({Key? key}) : super(key: key);
 
   void _onPressed(BuildContext context, Note note, WidgetRef ref) {
-    if (!note.isEmpty) ref.read(noteListProvider.notifier).add(note);
+    ref.read(noteListProvider.notifier).add(note);
     Navigator.pop(context, note);
     ref.read(noteProvider.state).state = Note.initial();
   }
