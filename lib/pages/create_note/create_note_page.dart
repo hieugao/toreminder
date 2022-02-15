@@ -15,12 +15,6 @@ import './view_models.dart';
 class CreateNotePage extends ConsumerWidget {
   const CreateNotePage({Key? key}) : super(key: key);
 
-  void _onPressed(BuildContext context, Note note, WidgetRef ref) {
-    ref.read(noteListProvider.notifier).add(note);
-    Navigator.pop(context, note);
-    ref.read(noteProvider.state).state = Note.initial();
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // FIXME: This will be called every time `note` is changed, I only want to call it once
@@ -139,114 +133,6 @@ class CreateNotePage extends ConsumerWidget {
                 label: 'Priority',
               ),
 
-              // Container(
-              //   padding: const EdgeInsets.all(16),
-              //   decoration: BoxDecoration(
-              //     borderRadius: BorderRadius.circular(16),
-              //     color: Colors.grey[800],
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       GestureDetector(
-              //         // Source: https://stackoverflow.com/a/54850948/16553764
-              //         behavior: HitTestBehavior.translucent,
-              //         onTap: () => _showMBS(
-              //           context,
-              //           asyncDb.when(
-              //             data: (db) => _ListViewSearch(
-              //               tags: db.categories,
-              //               onComplete: (tags) =>
-              //                   ref.read(noteProvider.state).state = note.copyWith(categories: tags),
-              //             ),
-              //             loading: () => const Center(child: CircularProgressIndicator()),
-              //             error: (_, __) => const Center(child: Text('Error')),
-              //           ),
-              //         ),
-              //         child: Row(
-              //           mainAxisSize: MainAxisSize.max,
-              //           children: [
-              //             const Text('Categories'),
-              //             const SizedBox(width: 8),
-              //             note.categories.isEmpty
-              //                 ? const _TagPropertyAddButton()
-              //                 : SizedBox(
-              //                     height: 24,
-              //                     child: ListView.builder(
-              //                       shrinkWrap: true,
-              //                       scrollDirection: Axis.horizontal,
-              //                       physics: const ClampingScrollPhysics(),
-              //                       // physics: const NeverScrollableScrollPhysics(),
-              //                       itemCount: note.categories.length,
-              //                       itemBuilder: (context, index) {
-              //                         final tag = note.categories[index];
-              //                         return Padding(
-              //                           padding: const EdgeInsets.only(right: 4.0),
-              //                           child: _TagProperty(
-              //                             tag: tag,
-              //                             // onDelete: () => ref.read(noteProvider.state).state =
-              //                             //     note.copyWith(categories: note.categories.where((t) => t != tag).toList()),
-              //                           ),
-              //                         );
-              //                       },
-              //                       // children: [
-              //                       //   for (final NotionTag tag in note.categories)
-              //                       //     _TagProperty(tag: tag)
-              //                       // ],
-              //                     ),
-              //                   ),
-              //             // : Row(children: [
-              //             //     for (final NotionTag tag in note.categories) _TagProperty(tag: tag),
-              //             //   ]),
-              //           ],
-              //         ),
-              //       ),
-              //       const SizedBox(height: 16),
-              //       // GestureDetector(
-              //       //   behavior: HitTestBehavior.translucent,
-              //       //   onTap: () {
-              //       //     _showMBS(
-              //       //       context,
-              //       //       asyncDB.when(
-              //       //         data: (db) => _LabelsModal(
-              //       //           dueStrings: db.dueStrings,
-              //       //           priorities: db.priorities,
-              //       //           types: db.types,
-              //       //           onCompleted: (dueString, priority, type) => {
-              //       //             ref.read(noteProvider.state).state = note.copyWith(
-              //       //               dueString: dueString,
-              //       //               priority: priority,
-              //       //               type: type,
-              //       //             ),
-              //       //           },
-              //       //         ),
-              //       //         loading: () => const Center(child: CircularProgressIndicator()),
-              //       //         error: (_, __) => const Center(child: Text('Error')),
-              //       //       ),
-              //       //     );
-              //       //   },
-              //       //   child: Row(
-              //       //     mainAxisSize: MainAxisSize.max,
-              //       //     children: [
-              //       //       const Text('Labels'),
-              //       //       const SizedBox(width: 8),
-              //       //       isEmptyLabels
-              //       //           ? const _TagPropertyAddButton()
-              //       //           : Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              //       //               note.dueString != null
-              //       //                   ? _TagProperty(tag: note.dueString!)
-              //       //                   : Container(),
-              //       //               note.priority != null
-              //       //                   ? _TagProperty(tag: note.priority!)
-              //       //                   : Container(),
-              //       //               note.type != null ? _TagProperty(tag: note.type!) : Container(),
-              //       //             ]),
-              //       //     ],
-              //       //   ),
-              //       // ),
-              //     ],
-              //   ),
-              // ),
-
               const SizedBox(height: 20),
 
               // FIXME: Use Expanded instead!
@@ -272,6 +158,12 @@ class CreateNotePage extends ConsumerWidget {
         child: Icon(note.title.isEmpty ? Icons.arrow_back : Icons.add),
       ),
     );
+  }
+
+  void _onPressed(BuildContext context, Note note, WidgetRef ref) {
+    ref.read(noteListProvider.notifier).add(note);
+    ref.read(noteProvider.state).state = Note.initial();
+    Navigator.pop(context, note);
   }
 }
 
@@ -426,15 +318,6 @@ class _NoteProperty extends StatelessWidget {
         height: MediaQuery.of(context).size.height * mbsHeightPercentage,
         padding: const EdgeInsets.all(16),
         child: child,
-        // child: asyncDB.when(
-        //   data: (db) => _ListViewSearch(
-        //     tags: db.categories,
-        //     onComplete: (tags) => ref.read(noteProvider.state).state =
-        //         note.copyWith(categories: tags),
-        //   ),
-        //   loading: () => const Center(child: CircularProgressIndicator()),
-        //   error: (_, __) => const Center(child: Text('Error')),
-        // ),
       ),
     );
   }
@@ -533,23 +416,6 @@ class _LabelsListViewSearchState extends State<_LabelsListViewSearch> {
               ),
             ),
           ),
-
-          // Number of selected tag.
-          // if (_selectedTags.isNotEmpty) ...[
-          //   const SizedBox(width: 8),
-          //   Container(
-          //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          //     decoration: BoxDecoration(
-          //       color: Colors.grey[800],
-          //       borderRadius: BorderRadius.circular(12),
-          //     ),
-          //     child: Text(
-          //       _selectedTags.length.toString(),
-          //       style: Theme.of(context).textTheme.bodyText1!.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-          //     ),
-          //   ),
-          // ] else
-          //   const SizedBox(),
         ]),
 
         const SizedBox(height: 12),
@@ -670,19 +536,11 @@ class _DueStringandPriorityMBS extends StatefulWidget {
     Key? key,
     required this.dueStrings,
     required this.priorities,
-    // required this.types,
-    // this.dueString,
-    // this.priority,
-    // this.type,
     required this.onCompleted,
   }) : super(key: key);
 
   final List<NotionTag> dueStrings;
   final List<NotionTag> priorities;
-  // final List<NotionTag> types;
-  // final NotionTag? dueString;
-  // final NotionTag? priority;
-  // final NotionTag? type;
   final Function(NotionTag?, NotionTag?, NotionTag?) onCompleted;
 
   @override
@@ -771,136 +629,8 @@ class _DueStringandPriorityMBSState extends State<_DueStringandPriorityMBS> {
         ],
       ),
     );
-
-    // child: asyncDB.when(
-    //   data: (db) => ListView(
-    //     children: [
-    //       const Text('Lorem ipsum how uina supoin'),
-    //       const SizedBox(height: 16),
-    //       const Text('Due string'),
-    //       const SizedBox(height: 4),
-    //       _GridTagLabel(
-    //         tags: db.dueStrings,
-    //         onTap: (tag) => ref.read(noteProvider.state).state = note.copyWith(dueString: tag),
-    //       ),
-    //       const SizedBox(height: 16),
-    //       const Text('Due string'),
-    //       const SizedBox(height: 4),
-    //       _GridTagLabel(
-    //         tags: db.priorities,
-    //         onTap: (tag) => ref.read(noteProvider.state).state = note.copyWith(priority: tag),
-    //       ),
-    //       const SizedBox(height: 16),
-    //       const Text('Due string'),
-    //       const SizedBox(height: 4),
-    //       _GridTagLabel(
-    //         tags: db.types,
-    //         onTap: (tag) => ref.read(noteProvider.state).state = note.copyWith(type: tag),
-    //       ),
-    //     ],
-    //   ),
-    //   loading: () => const Center(child: CircularProgressIndicator()),
-    //   error: (e, st) => Text('Error: $e'),
-    // ));
   }
 }
-
-// class _GridTagLabel extends StatefulWidget {
-//   const _GridTagLabel({
-//     Key? key,
-//     required this.tags,
-//     required this.onTap,
-//   }) : super(key: key);
-
-//   final List<NotionTag> tags;
-//   final Function(NotionTag) onTap;
-
-//   @override
-//   State<_GridTagLabel> createState() => _GridTagLabelState();
-// }
-
-// class _GridTagLabelState extends State<_GridTagLabel> {
-//   NotionTag? _selectedTag;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // return Container(
-//     //   padding: const EdgeInsets.all(8),
-//     //   decoration: BoxDecoration(
-//     //     borderRadius: BorderRadius.circular(16),
-//     //     color: Colors.grey[800],
-//     //   ),
-//     //   child: GridView.count(
-//     //     physics: const NeverScrollableScrollPhysics(),
-//     //     crossAxisCount: 3,
-//     //     children: tags.map((tag) => _TagLabel(tag: tag, onTap: onTap)).toList(),
-//     //   ),
-//     // );
-//     return GridView.builder(
-//       shrinkWrap: true,
-//       physics: const NeverScrollableScrollPhysics(),
-//       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//         crossAxisCount: 4,
-//       ),
-//       itemCount: widget.tags.length,
-//       itemBuilder: (context, index) {
-//         return _TagLabel(
-//           tag: widget.tags[index],
-//           isSelected: _selectedTag == widget.tags[index],
-//           emojiOnly: true,
-//           onTap: (tag) {
-//             setState(() => _selectedTag = widget.tags[index]);
-//             widget.onTap(tag);
-//           },
-//         );
-//       },
-//     );
-//   }
-// }
-
-// @Deprecated('')
-// class _TagLabel extends StatelessWidget {
-//   const _TagLabel({
-//     Key? key,
-//     required this.tag,
-//     required this.onTap,
-//     this.isSelected = false,
-//     this.emojiOnly = false,
-//   }) : super(key: key);
-
-//   final NotionTag tag;
-//   final Function(NotionTag) onTap;
-//   final bool isSelected;
-//   final bool emojiOnly;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//       onTap: () => onTap(tag),
-//       child: Row(
-//         children: [
-//           Container(
-//             padding: const EdgeInsets.all(6),
-//             decoration: BoxDecoration(
-//               borderRadius: BorderRadius.circular(14),
-//               color: isSelected ? tag.color.fg.withOpacity(0.6) : Colors.transparent,
-//               border: Border.all(color: tag.color.fg.withOpacity(0.6), width: 2),
-//             ),
-//             child: Text(
-//               tag.emoji ?? '',
-//               style: Theme.of(context).textTheme.bodyText2!.apply(color: tag.color.fg),
-//             ),
-//           ),
-//           if (!emojiOnly) ...[
-//             const SizedBox(width: 16),
-//             Text(tag.content, style: Theme.of(context).textTheme.bodyText2),
-//           ] else
-//             const SizedBox(),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 class _TagListTile extends StatelessWidget {
   const _TagListTile({
