@@ -9,7 +9,6 @@ import 'package:notion_capture/common/widgets.dart';
 import '../../features/note/models.dart';
 import '../home/view_models.dart';
 import './view_models.dart';
-import './widgets.dart';
 
 // TODO: Convert to `StatelessWidget` and use `Consumer` instead, `title` and `body` don't
 // have to rebuild.
@@ -37,7 +36,8 @@ class CreateNotePage extends ConsumerWidget {
     // final asyncDB = ref.watch(notionDatabaseProvider);
     final asyncDb = ref.watch(notionDatabaseProvider);
 
-    final bool isEmptyTime = note.dueString == null && note.priority == null; // && note.type == null;
+    final bool isEmptyTime =
+        note.dueString == null && note.priority == null; // && note.type == null;
 
     print('Rebuilt check - Create Note page');
 
@@ -63,8 +63,10 @@ class CreateNotePage extends ConsumerWidget {
                   // controller: _titleController,
                   hintText: "Untitled",
                   autofocus: true,
-                  style: Theme.of(context).textTheme.headline6!.copyWith(fontWeight: FontWeight.w500),
-                  onChanged: (value) => ref.read(noteProvider.state).state = note.copyWith(title: value),
+                  style:
+                      Theme.of(context).textTheme.headline6!.copyWith(fontWeight: FontWeight.w500),
+                  onChanged: (value) =>
+                      ref.read(noteProvider.state).state = note.copyWith(title: value),
                 ),
               ),
 
@@ -72,12 +74,14 @@ class CreateNotePage extends ConsumerWidget {
 
               // ! Labels Block.
               _NoteProperty(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16), bottom: Radius.circular(4)),
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16), bottom: Radius.circular(4)),
                 tags: note.labels,
                 mbsChild: asyncDb.when(
                   data: (db) => _LabelsListViewSearch(
                     tags: db.labels,
-                    onCompleted: (tags) => ref.read(noteProvider.state).state = note.copyWith(labels: tags),
+                    onCompleted: (tags) =>
+                        ref.read(noteProvider.state).state = note.copyWith(labels: tags),
                   ),
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (_, __) => const Center(child: Text('Error')),
@@ -113,7 +117,8 @@ class CreateNotePage extends ConsumerWidget {
 
               // ! Priority.
               _NoteProperty(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(4), bottom: Radius.circular(16)),
                 tags: note.priority != null ? [note.priority!] : [],
                 mbsChild: asyncDb.when(
                   data: (db) => _DueStringandPriorityMBS(
@@ -254,7 +259,8 @@ class CreateNotePage extends ConsumerWidget {
                 child: _TextEditingBlock(
                   hintText: 'Enter note\'s content here...',
                   style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.white70),
-                  onChanged: (value) => ref.read(noteProvider.state).state = note.copyWith(body: value),
+                  onChanged: (value) =>
+                      ref.read(noteProvider.state).state = note.copyWith(body: value),
                 ),
               ),
             ],
@@ -472,7 +478,9 @@ class _LabelsListViewSearchState extends State<_LabelsListViewSearch> {
     if (keyword.isEmpty) {
       setState(() => _foundTags = widget.tags);
     } else {
-      final results = widget.tags.where((tag) => tag.name.toLowerCase().contains(keyword.toLowerCase())).toList();
+      final results = widget.tags
+          .where((tag) => tag.name.toLowerCase().contains(keyword.toLowerCase()))
+          .toList();
       setState(() => _foundTags = results);
     }
   }
@@ -558,7 +566,9 @@ class _LabelsListViewSearchState extends State<_LabelsListViewSearch> {
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 minLeadingWidth: 16,
-                tileColor: _selectedTags.contains(_foundTags[index]) ? Colors.grey.shade900.withOpacity(0.67) : null,
+                tileColor: _selectedTags.contains(_foundTags[index])
+                    ? Colors.grey.shade900.withOpacity(0.67)
+                    : null,
                 // _selectedTags.contains(_foundTags[index]) ? _foundTags[index].color.bg!.withOpacity(0.2) : null,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
 
@@ -582,7 +592,10 @@ class _LabelsListViewSearchState extends State<_LabelsListViewSearch> {
                   offset: const Offset(-16, 0),
                   child: Text(
                     _foundTags[index].content,
-                    style: Theme.of(context).textTheme.subtitle1!.copyWith(color: _foundTags[index].color.fg),
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1!
+                        .copyWith(color: _foundTags[index].color.fg),
                   ),
                 ),
                 onTap: () => _onTap(_foundTags[index]),
@@ -691,7 +704,8 @@ class _DueStringandPriorityMBSState extends State<_DueStringandPriorityMBS> {
   }
 
   void _onCompleted() {
-    widget.onCompleted(widget.dueStrings[_dueStringIndex], widget.priorities[_priorityIndex], _type);
+    widget.onCompleted(
+        widget.dueStrings[_dueStringIndex], widget.priorities[_priorityIndex], _type);
     Navigator.of(context).pop();
   }
 
@@ -748,7 +762,8 @@ class _DueStringandPriorityMBSState extends State<_DueStringandPriorityMBS> {
           // Confimation block.
           _CompleteAndCancleButtons(
             onCompleted: () {
-              widget.onCompleted(widget.dueStrings[_dueStringIndex], widget.priorities[_priorityIndex], _type);
+              widget.onCompleted(
+                  widget.dueStrings[_dueStringIndex], widget.priorities[_priorityIndex], _type);
               Navigator.of(context).pop();
             },
             onCancel: () => Navigator.of(context).pop(),
@@ -908,10 +923,8 @@ class _TagListTile extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       leading: TagIcon(tag: tag, isSelected: isSelected),
       title: Text(tag.content,
-          style: Theme.of(context)
-              .textTheme
-              .bodyText2!
-              .copyWith(color: tag.color.fg, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+          style: Theme.of(context).textTheme.bodyText2!.copyWith(
+              color: tag.color.fg, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
       onTap: onTap,
       // onTap: () => setState(() => _dueStringIndex = index),
     );
