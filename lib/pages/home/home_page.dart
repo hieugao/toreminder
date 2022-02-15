@@ -38,27 +38,27 @@ class HomePage extends StatelessWidget {
           'Notes',
           style: Theme.of(context).textTheme.headline6,
         ),
-        actions: [
-          Consumer(
-            builder: (context, ref, child) {
-              final numberUnsyncedNotes = ref.watch(noteListProvider.notifier).numberUnsyncedNotes;
-              final syncAsyncValue = ref.watch(noteSyncProvider);
+        // actions: [
+        //   Consumer(
+        //     builder: (context, ref, child) {
+        //       final numberUnsyncedNotes = ref.watch(noteListProvider.notifier).numberUnsyncedNotes;
+        //       final syncAsyncValue = ref.watch(noteSyncProvider);
 
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: syncAsyncValue.when(
-                    data: (syncStatus) => _SyncIndicator(numberUnsyncedNotes, status: syncStatus),
-                    error: (_, __) => Text('Error',
-                        style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
-                    loading: () =>
-                        const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
-                  ),
-                ),
-              );
-            },
-          )
-        ],
+        //       return Center(
+        //         child: Padding(
+        //           padding: const EdgeInsets.only(right: 8.0),
+        //           child: syncAsyncValue.when(
+        //             data: (syncStatus) => _SyncIndicator(numberUnsyncedNotes, status: syncStatus),
+        //             error: (_, __) => Text('Error',
+        //                 style: Theme.of(context).textTheme.subtitle2!.apply(color: Colors.red)),
+        //             loading: () =>
+        //                 const SizedBox(width: 12, height: 12, child: CircularProgressIndicator()),
+        //           ),
+        //         ),
+        //       );
+        //     },
+        //   )
+        // ],
       ),
       body: Consumer(
         builder: (context, ref, child) {
@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(children: <Widget>[
               Container(
-                constraints: BoxConstraints(maxHeight: height * 0.5),
+                // constraints: BoxConstraints(maxHeight: height * 0.5),
                 child: notes.isEmpty
                     ? const Center(child: _EmptyNotesIllustration())
                     : ListView.builder(
