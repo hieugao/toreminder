@@ -1,10 +1,13 @@
 // import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
+import 'package:notion_capture/pages/home/home_screen.dart';
+// import 'package:notion_capture/pages/todo/todo.dart';
 
 import './common/constants.dart';
 import './common/theme.dart';
-import './pages/home/home_page.dart';
+import './pages/home_note/home_page.dart';
 import './pages/create_note/create_note_page.dart';
+import 'pages/onboarding/onboarding_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -15,11 +18,13 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Notion Capture',
       theme: themeData,
-      initialRoute: Routes.root,
-      routes: {
-        Routes.root: (context) => const HomePage(),
-        Routes.createNote: (context) => const CreateNotePage(),
-      },
+      // initialRoute: Routes.root,
+      // routes: {
+      //   Routes.root: (context) => const HomePage(),
+      //   Routes.createNote: (context) => const CreateNotePage(),
+      // },
+      // home: OnboardingScreen(),
+      home: HomeScreen(),
       // home: FutureBuilder<void>(
       //   future: _Init.instance.initialize(),
       //   builder: (context, snapshot) {

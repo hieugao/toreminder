@@ -7,7 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:notion_capture/common/widgets.dart';
 
 import '../../features/note/models.dart';
-import '../home/view_models.dart';
+import '../home_note/view_models.dart';
 import './view_models.dart';
 
 // TODO: Convert to `StatelessWidget` and use `Consumer` instead, `title` and `body` don't

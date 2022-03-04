@@ -54,6 +54,12 @@ dependencies:
   characters: ^1.1.0
   timeago: ^3.1.0
 
+  # ------------------------------------------------------------------------- 
+
+  calendar_timeline: ^1.0.4
+  sqflite: ^2.0.2
+  intl: ^0.17.0
+
 dev_dependencies:
   test:
   flutter_test:
