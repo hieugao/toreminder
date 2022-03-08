@@ -12,6 +12,7 @@ class Todo with _$Todo {
     required String title,
     @Default('') String content,
     DateTime? dueDate,
+    @Default(false) bool done,
   }) = _Todo;
 
   factory Todo.initial(String title, String content, DateTime? dueDate) =>
@@ -25,6 +26,7 @@ class Todo with _$Todo {
       'title': title,
       'content': content,
       'dueDate': dueDate?.toIso8601String(),
+      'done': done.toString(),
     };
   }
 }

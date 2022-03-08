@@ -56,9 +56,11 @@ dependencies:
 
   # ------------------------------------------------------------------------- 
 
-  calendar_timeline: ^1.0.4
+  calendar_timeline:
+    path: ./packages/calendar_timeline
   sqflite: ^2.0.2
   intl: ^0.17.0
+  fl_chart: ^0.45.1
 
 dev_dependencies:
   test:

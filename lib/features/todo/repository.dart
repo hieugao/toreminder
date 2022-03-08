@@ -9,6 +9,8 @@ import 'models.dart';
 abstract class TodoRepository {
   Future<List<Todo>> todos();
   Future<void> add(Todo todo, List<Todo> todos);
+  Future<void> remove(Todo todo, List<Todo> todos);
+  Future<void> save(List<Todo> todos);
 }
 
 class TodoSharedPrefsRepository implements TodoRepository {
@@ -19,14 +21,24 @@ class TodoSharedPrefsRepository implements TodoRepository {
   String get _todosKey => 'todos';
 
   @override
-  Future<List<Todo>> todos() async {
-    final todosJson = _prefs.getString(_todosKey) ?? '[]';
-    return json.decode(todosJson).map((todo) => Todo.fromJson(todo)).toList();
+  Future<void> save(List<Todo> todos) async {
+    _prefs.setString(_todosKey, json.encode(todos));
   }
 
   @override
-  Future<void> add(_, List<Todo> todos) async {
-    _prefs.setString('notes', json.encode(_todosKey));
+  Future<List<Todo>> todos() async {
+    final todosJson = _prefs.getString(_todosKey) ?? '[]';
+    return json.decode(todosJson).map<Todo>((todo) => Todo.fromJson(todo)).toList();
+  }
+
+  @override
+  Future<void> add(_, __) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> remove(_, __) async {
+    throw UnimplementedError();
   }
 }
 
@@ -54,6 +66,17 @@ class TodoSqlRepository implements TodoRepository {
   }
 
   @override
+  Future<void> remove(Todo todo, _) async {
+    final db = await database;
+
+    await db.delete(
+      tableName,
+      where: 'id = ?',
+      whereArgs: [todo.id],
+    );
+  }
+
+  @override
   Future<List<Todo>> todos() async {
     // Get a reference to the database.
     final db = await database;
@@ -70,6 +93,11 @@ class TodoSqlRepository implements TodoRepository {
         dueDate: DateTime.parse(maps[i]['dueDate']),
       );
     });
+  }
+
+  @override
+  Future<void> save(_) async {
+    throw UnimplementedError();
   }
 
   Future<Database> _init() async {

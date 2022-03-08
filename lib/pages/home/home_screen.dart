@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'package:calendar_timeline/calendar_timeline.dart';
+// import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 // import 'package:timeago/timeago.dart' as timeago;
 
 import '../../features/todo/models.dart';
@@ -18,89 +20,127 @@ _textEditingDecoration(String hint) => InputDecoration(
       border: InputBorder.none,
     );
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _isCreatingTodo = false;
+  DateTime? _selectedDate = DateTime.now();
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final todosNotifier = ref.watch(todoListProvider.notifier);
+
     final theme = Theme.of(context);
+    final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text('Hello, Rosie', style: theme.textTheme.headline6),
+        actions: const [_Avatar()],
+      ),
       body: SafeArea(child: Consumer(
         builder: (context, ref, child) {
           final todos = ref.watch(todoListProvider);
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // CalendarTimeline(
-                //   initialDate: DateTime(2020, 4, 20),
-                //   firstDate: DateTime(2019, 1, 15),
-                //   lastDate: DateTime(2020, 11, 20),
-                //   onDateSelected: (date) => print(date),
-                //   leftMargin: 20,
-                //   monthColor: Colors.blueGrey,
-                //   dayColor: Colors.teal[200],
-                //   activeDayColor: Colors.white,
-                //   activeBackgroundDayColor: Colors.redAccent[100],
-                //   dotsColor: Color(0xFF333A47),
-                //   selectableDayPredicate: (date) => date.day != 23,
-                //   locale: 'en_ISO',
-                // ),
-                // const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'TODAY\'S TO-DO${todos.isNotEmpty ? 'S' : ""}',
-                    style: Theme.of(context).textTheme.caption!.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: theme.disabledColor,
-                        ),
-                  ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // CalendarTimeline(
+              //   // initialDate: DateTime(2020, 4, 20),
+              //   // firstDate: DateTime(2019, 1, 15),
+              //   // lastDate: DateTime(2020, 11, 20),
+              //   initialDate: _selectedDate!,
+              //   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
+              //   // lastDate: _selectedDate!.add(const Duration(days: 14)),
+              //   firstDate: DateTime(2022, 02, 20),
+              //   lastDate: DateTime(2022, 03, 20),
+              //   onDateSelected: (date) => setState(() {
+              //     _selectedDate = date;
+              //   }),
+              //   leftMargin: 0,
+              //   monthColor: theme.disabledColor,
+              //   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
+              //   activeDayColor: theme.textTheme.bodyText1!.color,
+              //   activeBackgroundDayColor: const Color(0xFF5d4efe),
+              //   dotsColor: const Color(0xFF333A47),
+              //   selectableDayPredicate: (date) => date.day != 23,
+              //   locale: 'en_ISO',
+              // ),
+              // const SizedBox(height: 16),
+              SizedBox(
+                height: height * 0.175,
+                child: _StatsBoard(
+                  completed: todosNotifier.completed,
+                  total: todos.length,
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: todos.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                        child: ListTile(
-                          // contentPadding: EdgeInsets.zero,
-                          dense: true,
-                          leading: Checkbox(
-                            checkColor: Colors.orange.shade500,
-                            // fillColor:  // MaterialStateProperty.resolveWith(Colors.transparent),
-                            activeColor: Colors.transparent,
-                            // value: _selectedTags.contains(_foundTags[index]),
-                            value: false,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            onChanged: (bool? value) {},
-                          ),
-                          title: Text(todos[index].title,
-                              style: Theme.of(context).textTheme.subtitle1),
-                          subtitle: const Text(''),
-                          onTap: () {},
-                        ),
-                      );
-                    },
+              ),
+              const SizedBox(height: 32),
+              Container(
+                height: 56,
+                // margin: EdgeInsets.only(left: 60),
+                child: TabBar(
+                  tabs: const [
+                    _TodoTabBarItem(
+                      icon: Icons.calendar_today,
+                      label: 'Today',
+                    ),
+                    _TodoTabBarItem(
+                      icon: Icons.calendar_view_week,
+                      label: '7 days',
+                    ),
+                    _TodoTabBarItem(
+                      icon: Icons.calendar_month,
+                      label: 'Calendar',
+                    ),
+                  ],
+                  // unselectedLabelColor: const Color(0xffacb3bf),
+                  // labelColor: Colors.black,
+                  // indicatorColor: Colors.transparent,
+                  // indicatorSize: TabBarIndicatorSize.tab,
+                  // indicatorWeight: 3.0,
+                  // indicatorPadding: EdgeInsets.all(10),
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                  indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: _tabController.index == 0 ? theme.primaryColor : Colors.transparent,
                   ),
+                  isScrollable: false,
+                  controller: _tabController,
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                // height: 100,
+                child: TabBarView(controller: _tabController, children: <Widget>[
+                  _TodoListView(
+                    todos,
+                    onDeleted: (index) => ref.read(todoListProvider.notifier).remove(todos[index]),
+                  ),
+                  Container(
+                    color: Colors.yellow,
+                    child: Text("7 days"),
+                  ),
+                  Container(
+                    color: Colors.blue,
+                    child: Text("calnedar"),
+                  )
+                ]),
+              ),
+            ],
           );
         },
       )),
@@ -111,22 +151,39 @@ class _HomeScreenState extends State<HomeScreen> {
           shape: const CircularNotchedRectangle(),
           child: Row(
             mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.show_chart,
-                  color: Theme.of(context).disabledColor,
-                ),
-                onPressed: () {},
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(width: 16),
+                  IconButton(
+                    icon: Icon(
+                      Icons.home,
+                      color: Theme.of(context).disabledColor,
+                    ),
+                    onPressed: () {},
+                  ),
+                  SizedBox(width: 16),
+                  IconButton(
+                    icon: Icon(
+                      Icons.settings,
+                      color: Theme.of(context).disabledColor,
+                    ),
+                    onPressed: () {},
+                  ),
+                ],
               ),
-              SizedBox(width: 48.0),
-              IconButton(
-                icon: Icon(
-                  Icons.filter_list,
-                  color: Theme.of(context).disabledColor,
+              // SizedBox(width: 48.0),
+              Padding(
+                padding: const EdgeInsets.only(right: 40),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).disabledColor,
+                  ),
+                  onPressed: () {},
                 ),
-                onPressed: () {},
               ),
             ],
           ),
@@ -157,6 +214,368 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 4),
+      padding: const EdgeInsets.all(8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          'assets/avatar.png',
+          // height: 40,
+          // width: 40,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatsBoard extends StatefulWidget {
+  const _StatsBoard({
+    Key? key,
+    required this.completed,
+    required this.total,
+  }) : super(key: key);
+
+  final int completed;
+  final int total;
+
+  @override
+  State<_StatsBoard> createState() => _StatsBoardState();
+}
+
+class _StatsBoardState extends State<_StatsBoard> {
+  bool showLineChart = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.grey.shade700,
+          ),
+          child: !showLineChart
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          'Today',
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption!
+                              .apply(color: Theme.of(context).disabledColor),
+                        ),
+                        Text(
+                          '${widget.completed}/${widget.total} todo${widget.total != 1 ? 's' : ""}',
+                          style: Theme.of(context).textTheme.headline6!,
+                        ),
+                      ],
+                    ),
+                    Image.asset(
+                      'assets/dartboard.webp',
+                      height: 128,
+                      width: 128,
+                    ),
+                  ],
+                )
+              : _WeekLineChart(),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.withOpacity(0.38),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 4,
+                  offset: const Offset(2, 4),
+                ),
+              ],
+            ),
+            child: IconButton(
+              padding: const EdgeInsets.all(0),
+              onPressed: () => setState(() => showLineChart = !showLineChart),
+              icon: const Icon(Icons.show_chart, size: 16),
+              color: Colors.white.withOpacity(0.6),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class _WeekLineChart extends StatelessWidget {
+  const _WeekLineChart({Key? key}) : super(key: key);
+
+  static const List<Color> gradientColors = [
+    Color(0xff23b6e6),
+    Color(0xff02d39a),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: true,
+          horizontalInterval: 1,
+          verticalInterval: 1,
+          getDrawingHorizontalLine: (value) {
+            return FlLine(
+              color: const Color(0xff37434d),
+              strokeWidth: 1,
+            );
+          },
+          getDrawingVerticalLine: (value) {
+            return FlLine(
+              color: const Color(0xff37434d),
+              strokeWidth: 1,
+            );
+          },
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: SideTitles(showTitles: false),
+          topTitles: SideTitles(showTitles: false),
+          bottomTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 22,
+            interval: 1,
+            getTextStyles: (context, value) => const TextStyle(
+                color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
+            getTitles: (value) {
+              switch (value.toInt()) {
+                case 2:
+                  return 'MAR';
+                case 5:
+                  return 'JUN';
+                case 8:
+                  return 'SEP';
+              }
+              return '';
+            },
+            margin: 8,
+          ),
+          leftTitles: SideTitles(
+            showTitles: true,
+            interval: 1,
+            getTextStyles: (context, value) => const TextStyle(
+              color: Color(0xff67727d),
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+            getTitles: (value) {
+              switch (value.toInt()) {
+                case 1:
+                  return '10k';
+                case 3:
+                  return '30k';
+                case 5:
+                  return '50k';
+              }
+              return '';
+            },
+            reservedSize: 32,
+            margin: 12,
+          ),
+        ),
+        borderData:
+            FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
+        minX: 0,
+        maxX: 11,
+        minY: 0,
+        maxY: 6,
+        lineBarsData: [
+          LineChartBarData(
+            spots: const [
+              FlSpot(0, 3),
+              FlSpot(2.6, 2),
+              FlSpot(4.9, 5),
+              FlSpot(6.8, 3.1),
+              FlSpot(8, 4),
+              FlSpot(9.5, 3),
+              FlSpot(11, 4),
+            ],
+            isCurved: true,
+            colors: gradientColors,
+            barWidth: 5,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: false,
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TodoTabBarItem extends StatelessWidget {
+  const _TodoTabBarItem({
+    Key? key,
+    required this.icon,
+    required this.label,
+  }) : super(key: key);
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16),
+        const SizedBox(width: 8),
+        Text(label),
+      ],
+    );
+  }
+}
+
+class _TodoListView extends StatelessWidget {
+  const _TodoListView(this.todos, {Key? key, required this.onDeleted}) : super(key: key);
+
+  final List<Todo> todos;
+  final Function(int) onDeleted;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: todos.length,
+      itemBuilder: (context, index) {
+        return Card(
+          elevation: 4,
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          child: _TodoListTile(todos[index], onDeleted: () => onDeleted(index)),
+        );
+      },
+    );
+  }
+}
+
+class _TodoListTile extends StatefulWidget {
+  const _TodoListTile(this.todo, {Key? key, this.onDeleted}) : super(key: key);
+
+  final Todo todo;
+  final VoidCallback? onDeleted;
+
+  @override
+  __TodoListTileState createState() => __TodoListTileState();
+}
+
+class __TodoListTileState extends State<_TodoListTile> {
+  bool _isChecked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Slidable(
+      // Specify a key if the Slidable is dismissible.
+      key: ValueKey(widget.todo.id),
+
+      // The start action pane is the one at the left or the top side.
+      // startActionPane: ActionPane(
+      //   // A motion is a widget used to control how the pane animates.
+      //   motion: const ScrollMotion(),
+
+      //   // A pane can dismiss the Slidable.
+      //   dismissible: DismissiblePane(onDismissed: () {}),
+
+      //   // All actions are defined in the children parameter.
+      //   children: const [
+      //     // A SlidableAction can have an icon and/or a label.
+      //     SlidableAction(
+      //       onPressed: null,
+      //       // backgroundColor: Color(0xFFFE4A49),
+      //       foregroundColor: Colors.white,
+      //       icon: Icons.delete,
+      //       label: 'Delete',
+      //     ),
+      //     SlidableAction(
+      //       onPressed: null,
+      //       // backgroundColor: Color(0xFF21B7CA),
+      //       foregroundColor: Colors.white,
+      //       icon: Icons.share,
+      //       label: 'Share',
+      //     ),
+      //   ],
+      // ),
+
+      // The end action pane is the one at the right or the bottom side.
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            // An action can be bigger than the others.
+            onPressed: null,
+            backgroundColor: Colors.transparent,
+            // foregroundColor: Colors.amber,
+            foregroundColor: Colors.grey[700],
+            icon: Icons.edit,
+            // label: 'Archive',
+          ),
+          SlidableAction(
+            onPressed: (_) => widget.onDeleted?.call(),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.red,
+            icon: Icons.delete_forever,
+            // label: 'Save',
+          ),
+        ],
+      ),
+
+      // The child of the Slidable is what the user sees when the
+      // component is not dragged.
+      child: ListTile(
+        // contentPadding: EdgeInsets.zero,
+        key: Key(widget.todo.id),
+        // dense: true,
+        leading: Checkbox(
+          checkColor: Colors.orange.shade500,
+          // fillColor:  // MaterialStateProperty.resolveWith(Colors.transparent),
+          activeColor: Colors.transparent,
+          // value: _selectedTags.contains(_foundTags[index]),
+          value: _isChecked,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          onChanged: (bool? value) {
+            // setState(() {
+            //   _isChecked = value;
+            // });
+          },
+        ),
+        title: Text(widget.todo.title, style: Theme.of(context).textTheme.subtitle1),
+        onTap: () {
+          setState(() {
+            _isChecked = !_isChecked;
+          });
+        },
+      ),
     );
   }
 }
@@ -403,7 +822,6 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
 //     );
 //   }
 // }
-
 
 // class _DateRangeWidget extends StatefulWidget {
 //   _DateRangeWidget({Key? key}) : super(key: key);
