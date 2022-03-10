@@ -15,10 +15,11 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
   final sharedPreferences = await SharedPreferences.getInstance();
 
+  // TODO: Disable this.
   // ! Android only.
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     // systemNavigationBarColor: Colors.blue,
-    statusBarColor: Colors.grey[850],
+    statusBarColor: Color(0xFF151515),
   ));
 
   // Source: https://github.com/jonbhanson/flutter_native_splash/blob/master/example/lib/main.dart

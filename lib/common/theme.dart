@@ -8,9 +8,19 @@ final themeData = ThemeData(
   floatingActionButtonTheme: FloatingActionButtonThemeData(
     backgroundColor: Colors.orange[300],
   ),
+
+  // Buttons:
+  // FIXME: Obsolete?
   buttonTheme: ButtonThemeData(
     highlightColor: Colors.orange[300],
     buttonColor: Colors.orange[300],
     textTheme: ButtonTextTheme.normal,
   ),
+  // elevatedButtonTheme: ElevatedButtonThemeData(
+  //   style: ElevatedButton.styleFrom(
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.circular(10.0),
+  //     ),
+  //   ),
+  // ),
 );
