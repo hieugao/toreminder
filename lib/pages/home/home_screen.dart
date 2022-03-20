@@ -41,7 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final todosNotifier = ref.watch(todoListProvider.notifier);
+    final todos = ref.watch(todoListProvider);
 
     final theme = Theme.of(context);
     final height = MediaQuery.of(context).size.height;
@@ -53,39 +53,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         title: Text('Hello, Rosie', style: theme.textTheme.headline6),
         actions: const [_Avatar()],
       ),
-      body: SafeArea(child: Consumer(
-        builder: (context, ref, child) {
-          final todos = ref.watch(todoListProvider);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // CalendarTimeline(
-              //   // initialDate: DateTime(2020, 4, 20),
-              //   // firstDate: DateTime(2019, 1, 15),
-              //   // lastDate: DateTime(2020, 11, 20),
-              //   initialDate: _selectedDate!,
-              //   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
-              //   // lastDate: _selectedDate!.add(const Duration(days: 14)),
-              //   firstDate: DateTime(2022, 02, 20),
-              //   lastDate: DateTime(2022, 03, 20),
-              //   onDateSelected: (date) => setState(() {
-              //     _selectedDate = date;
-              //   }),
-              //   leftMargin: 0,
-              //   monthColor: theme.disabledColor,
-              //   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
-              //   activeDayColor: theme.textTheme.bodyText1!.color,
-              //   activeBackgroundDayColor: const Color(0xFF5d4efe),
-              //   dotsColor: const Color(0xFF333A47),
-              //   selectableDayPredicate: (date) => date.day != 23,
-              //   locale: 'en_ISO',
-              // ),
-              // const SizedBox(height: 16),
-              SizedBox(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // CalendarTimeline(
+            //   // initialDate: DateTime(2020, 4, 20),
+            //   // firstDate: DateTime(2019, 1, 15),
+            //   // lastDate: DateTime(2020, 11, 20),
+            //   initialDate: _selectedDate!,
+            //   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
+            //   // lastDate: _selectedDate!.add(const Duration(days: 14)),
+            //   firstDate: DateTime(2022, 02, 20),
+            //   lastDate: DateTime(2022, 03, 20),
+            //   onDateSelected: (date) => setState(() {
+            //     _selectedDate = date;
+            //   }),
+            //   leftMargin: 0,
+            //   monthColor: theme.disabledColor,
+            //   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
+            //   activeDayColor: theme.textTheme.bodyText1!.color,
+            //   activeBackgroundDayColor: const Color(0xFF5d4efe),
+            //   dotsColor: const Color(0xFF333A47),
+            //   selectableDayPredicate: (date) => date.day != 23,
+            //   locale: 'en_ISO',
+            // ),
+            // const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: SizedBox(
                 height: height * 0.175,
                 child: _StatsBoard(
-                  completed: todosNotifier.completed,
+                  completed: todos.where((todo) => todo.done).length,
                   total: todos.length,
                 ),
               ),
@@ -128,7 +127,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 child: TabBarView(controller: _tabController, children: <Widget>[
                   _TodoListView(
                     todos,
-                    onDeleted: (index) => ref.read(todoListProvider.notifier).remove(todos[index]),
+                    onChanged: (index, value) => ref
+                        .read(todoListProvider.notifier)
+                        .updateAt(index, todos[index].copyWith(done: value)),
+                    onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
                   ),
                   Container(
                     color: Colors.yellow,
@@ -457,9 +459,15 @@ class _TodoTabBarItem extends StatelessWidget {
 }
 
 class _TodoListView extends StatelessWidget {
-  const _TodoListView(this.todos, {Key? key, required this.onDeleted}) : super(key: key);
+  const _TodoListView(
+    this.todos, {
+    Key? key,
+    required this.onChanged,
+    required this.onDeleted,
+  }) : super(key: key);
 
   final List<Todo> todos;
+  final Function(int, bool) onChanged;
   final Function(int) onDeleted;
 
   @override
@@ -470,19 +478,30 @@ class _TodoListView extends StatelessWidget {
         return Card(
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          child: _TodoListTile(todos[index], onDeleted: () => onDeleted(index)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: _TodoListTile(
+            todos[index],
+            onChanged: (value) => onChanged(index, value),
+            onDeleted: () => onDeleted(index),
+          ),
         );
       },
     );
   }
 }
 
+// FIXME: Convert to StatelessWidget.
 class _TodoListTile extends StatefulWidget {
-  const _TodoListTile(this.todo, {Key? key, this.onDeleted}) : super(key: key);
+  const _TodoListTile(
+    this.todo, {
+    Key? key,
+    required this.onChanged,
+    required this.onDeleted,
+  }) : super(key: key);
 
   final Todo todo;
-  final VoidCallback? onDeleted;
+  final Function(bool) onChanged;
+  final VoidCallback onDeleted;
 
   @override
   __TodoListTileState createState() => __TodoListTileState();
@@ -492,89 +511,72 @@ class __TodoListTileState extends State<_TodoListTile> {
   bool _isChecked = false;
 
   @override
+  void initState() {
+    super.initState();
+    _isChecked = widget.todo.done;
+  }
+
+  @override
+  void didUpdateWidget(_TodoListTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.todo != widget.todo) {
+      _isChecked = widget.todo.done;
+    }
+  }
+
+  void _onChanged() {
+    setState(() => _isChecked = !_isChecked);
+    widget.onChanged(_isChecked);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Slidable(
       // Specify a key if the Slidable is dismissible.
       key: ValueKey(widget.todo.id),
-
-      // The start action pane is the one at the left or the top side.
-      // startActionPane: ActionPane(
-      //   // A motion is a widget used to control how the pane animates.
-      //   motion: const ScrollMotion(),
-
-      //   // A pane can dismiss the Slidable.
-      //   dismissible: DismissiblePane(onDismissed: () {}),
-
-      //   // All actions are defined in the children parameter.
-      //   children: const [
-      //     // A SlidableAction can have an icon and/or a label.
-      //     SlidableAction(
-      //       onPressed: null,
-      //       // backgroundColor: Color(0xFFFE4A49),
-      //       foregroundColor: Colors.white,
-      //       icon: Icons.delete,
-      //       label: 'Delete',
-      //     ),
-      //     SlidableAction(
-      //       onPressed: null,
-      //       // backgroundColor: Color(0xFF21B7CA),
-      //       foregroundColor: Colors.white,
-      //       icon: Icons.share,
-      //       label: 'Share',
-      //     ),
-      //   ],
-      // ),
-
-      // The end action pane is the one at the right or the bottom side.
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         children: [
           SlidableAction(
-            // An action can be bigger than the others.
             onPressed: null,
             backgroundColor: Colors.transparent,
-            // foregroundColor: Colors.amber,
             foregroundColor: Colors.grey[700],
             icon: Icons.edit,
-            // label: 'Archive',
           ),
           SlidableAction(
-            onPressed: (_) => widget.onDeleted?.call(),
+            onPressed: (context) => widget.onDeleted(),
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.red,
             icon: Icons.delete_forever,
-            // label: 'Save',
           ),
         ],
       ),
-
-      // The child of the Slidable is what the user sees when the
-      // component is not dragged.
       child: ListTile(
-        // contentPadding: EdgeInsets.zero,
+        contentPadding: const EdgeInsets.only(left: 8),
         key: Key(widget.todo.id),
         // dense: true,
+        horizontalTitleGap: 0,
         leading: Checkbox(
-          checkColor: Colors.orange.shade500,
+          checkColor: Theme.of(context).primaryColor,
           // fillColor:  // MaterialStateProperty.resolveWith(Colors.transparent),
+          // activeColor: Colors.grey.shade500.withOpacity(0.38),
           activeColor: Colors.transparent,
           // value: _selectedTags.contains(_foundTags[index]),
+          visualDensity: VisualDensity.compact,
           value: _isChecked,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          onChanged: (bool? value) {
-            // setState(() {
-            //   _isChecked = value;
-            // });
-          },
+          side: MaterialStateBorderSide.resolveWith(
+            (states) => BorderSide(
+              width: 1.75,
+              color: _isChecked ? Colors.transparent : Colors.white60,
+            ),
+          ),
+          onChanged: (_) => _onChanged(),
         ),
         title: Text(widget.todo.title, style: Theme.of(context).textTheme.subtitle1),
-        onTap: () {
-          setState(() {
-            _isChecked = !_isChecked;
-          });
-        },
+        onTap: _onChanged,
       ),
     );
   }

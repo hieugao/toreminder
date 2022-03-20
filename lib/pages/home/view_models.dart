@@ -20,15 +20,22 @@ class TodoListViewModel extends StateNotifier<List<Todo>> {
 
   List<Todo> get todos => state;
 
-  int get completed => todos.where((todo) => todo.done).length;
-
   Future<void> add(Todo todo) async {
     state = [...state, todo];
     await repo.save(state);
   }
 
-  Future<void> remove(Todo todo) async {
-    state = state.where((t) => t.id != todo.id).toList();
+  Future<void> updateAt(int index, Todo todo) async {
+    var newState = state;
+    newState[index] = todo;
+    state = [...newState];
+    await repo.save(state);
+  }
+
+  Future<void> removeAt(int index) async {
+    var newState = state;
+    newState.removeAt(index);
+    state = [...newState];
     await repo.save(state);
   }
 

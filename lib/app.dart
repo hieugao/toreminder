@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
       //   Routes.root: (context) => const HomePage(),
       //   Routes.createNote: (context) => const CreateNotePage(),
       // },
-      home: OnboardingScreen(),
-      // home: HomeScreen(),
+      // home: OnboardingScreen(),
+      home: HomeScreen(),
       // home: FutureBuilder<void>(
       //   future: _Init.instance.initialize(),
       //   builder: (context, snapshot) {
