@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 // import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 // import 'package:timeago/timeago.dart' as timeago;
 
 import '../../features/todo/models.dart';
@@ -36,7 +37,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this)
+      ..addListener(() {
+        setState(() {/* Reload `_TabBarItem` */});
+      });
   }
 
   @override
@@ -88,42 +92,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   total: todos.length,
                 ),
               ),
-              const SizedBox(height: 32),
-              Container(
-                height: 56,
-                // margin: EdgeInsets.only(left: 60),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                height: 40,
                 child: TabBar(
-                  tabs: const [
-                    _TodoTabBarItem(
-                      icon: Icons.calendar_today,
-                      label: 'Today',
-                    ),
-                    _TodoTabBarItem(
-                      icon: Icons.calendar_view_week,
-                      label: '7 days',
-                    ),
-                    _TodoTabBarItem(
-                      icon: Icons.calendar_month,
-                      label: 'Calendar',
-                    ),
-                  ],
+                  isScrollable: true,
+                  controller: _tabController,
                   // unselectedLabelColor: const Color(0xffacb3bf),
                   // labelColor: Colors.black,
                   // indicatorColor: Colors.transparent,
                   // indicatorSize: TabBarIndicatorSize.tab,
                   // indicatorWeight: 3.0,
                   // indicatorPadding: EdgeInsets.all(10),
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                   indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: _tabController.index == 0 ? theme.primaryColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                    color: theme.primaryColor,
                   ),
-                  isScrollable: false,
-                  controller: _tabController,
+                  tabs: [
+                    _TodoTabBarItem(
+                      icon: Icons.calendar_today,
+                      label: 'Today',
+                      isSelected: _tabController.index == 0,
+                    ),
+                    _TodoTabBarItem(
+                      icon: Icons.calendar_view_week,
+                      label: 'Next 7 days',
+                      isSelected: _tabController.index == 1,
+                    ),
+                    _TodoTabBarItem(
+                      icon: Icons.calendar_month,
+                      label: 'Incoming',
+                      isSelected: _tabController.index == 2,
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                // height: 100,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: TabBarView(controller: _tabController, children: <Widget>[
                   _TodoListView(
                     todos,
@@ -142,60 +152,82 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   )
                 ]),
               ),
-            ],
-          );
-        },
-      )),
-      bottomNavigationBar: SizedBox(
-        height: _kBottomBarHeight,
-        child: BottomAppBar(
-          elevation: 8,
-          shape: const CircularNotchedRectangle(),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  SizedBox(width: 16),
-                  IconButton(
-                    icon: Icon(
-                      Icons.home,
-                      color: Theme.of(context).disabledColor,
-                    ),
-                    onPressed: () {},
-                  ),
-                  SizedBox(width: 16),
-                  IconButton(
-                    icon: Icon(
-                      Icons.settings,
-                      color: Theme.of(context).disabledColor,
-                    ),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-              // SizedBox(width: 48.0),
-              Padding(
-                padding: const EdgeInsets.only(right: 40),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.search,
-                    color: Theme.of(context).disabledColor,
-                  ),
-                  onPressed: () {},
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // TODO: Later.
+      // bottomNavigationBar: SizedBox(
+      //   height: _kBottomBarHeight,
+      //   child: BottomAppBar(
+      //     elevation: 8,
+      //     shape: const CircularNotchedRectangle(),
+      //     child: Row(
+      //       mainAxisSize: MainAxisSize.max,
+      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //       children: <Widget>[
+      //         Row(
+      //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      //           children: [
+      //             SizedBox(width: 16),
+      //             IconButton(
+      //               icon: Icon(
+      //                 Icons.home,
+      //                 color: Theme.of(context).disabledColor,
+      //               ),
+      //               onPressed: () {},
+      //             ),
+      //             SizedBox(width: 16),
+      //             IconButton(
+      //               icon: Icon(
+      //                 Icons.settings,
+      //                 color: Theme.of(context).disabledColor,
+      //               ),
+      //               onPressed: () {},
+      //             ),
+      //           ],
+      //         ),
+      //         // SizedBox(width: 48.0),
+      //         Padding(
+      //           padding: const EdgeInsets.only(right: 40),
+      //           child: IconButton(
+      //             icon: Icon(
+      //               Icons.search,
+      //               color: Theme.of(context).disabledColor,
+      //             ),
+      //             onPressed: () {},
+      //           ),
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _isCreatingTodo
           ? null
           : FloatingActionButton(
-              child: const Icon(Icons.add),
+              child: Container(
+                height: 60,
+                width: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle, // circular shape
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    // stops: [0.1, 0.5],
+                    colors: [
+                      // Color(0xFF9400d3),
+                      // Color(0xFFff8b00),
+                      // Color.fromRGBO(251, 112, 71, 1),
+                      // Color.fromRGBO(255, 190, 32, 1),
+                      Theme.of(context).primaryColor,
+                      Colors.orange,
+                    ],
+                  ),
+                  // color: Theme.of(context).primaryColor,
+                ),
+                child: const Icon(FontAwesomeIcons.plus, size: 24, color: Colors.white70),
+              ),
               onPressed: () {
                 showModalBottomSheet(
                   context: context,
@@ -227,7 +259,7 @@ class _Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(10),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Image.asset(
@@ -263,8 +295,8 @@ class _StatsBoardState extends State<_StatsBoard> {
       children: [
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.grey.shade700,
+            borderRadius: BorderRadius.circular(20),
+            color: Theme.of(context).colorScheme.secondary,
           ),
           child: !showLineChart
               ? Row(
@@ -272,13 +304,14 @@ class _StatsBoardState extends State<_StatsBoard> {
                   children: [
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Today',
                           style: Theme.of(context)
                               .textTheme
                               .caption!
-                              .apply(color: Theme.of(context).disabledColor),
+                              .apply(color: Colors.white.withOpacity(0.6)),
                         ),
                         Text(
                           '${widget.completed}/${widget.total} todo${widget.total != 1 ? 's' : ""}',
@@ -286,24 +319,27 @@ class _StatsBoardState extends State<_StatsBoard> {
                         ),
                       ],
                     ),
-                    Image.asset(
-                      'assets/dartboard.webp',
-                      height: 128,
-                      width: 128,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/dartboard.webp',
+                        height: 128,
+                        width: 128,
+                      ),
                     ),
                   ],
                 )
               : _WeekLineChart(),
         ),
         Positioned(
-          top: 4,
-          right: 4,
+          top: 8,
+          right: 8,
           child: Container(
             width: 28,
             height: 28,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.grey.withOpacity(0.38),
+              color: showLineChart ? Colors.purple.shade300 : Colors.red.shade300,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.12),
@@ -441,18 +477,22 @@ class _TodoTabBarItem extends StatelessWidget {
     Key? key,
     required this.icon,
     required this.label,
+    required this.isSelected,
   }) : super(key: key);
 
   final IconData icon;
   final String label;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
+    const color = Colors.white70;
+
     return Row(
       children: [
-        Icon(icon, size: 16),
+        Icon(icon, size: 16, color: color),
         const SizedBox(width: 8),
-        Text(label),
+        Text(label, style: Theme.of(context).textTheme.subtitle2!.copyWith(color: color)),
       ],
     );
   }
@@ -600,7 +640,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
   Timer? _debounce;
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _selectedDate;
 
   @override
   void dispose() {
@@ -616,42 +656,46 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                autofocus: true,
-                controller: _titleController,
-                decoration: _textEditingDecoration('Enter the title...'),
-                style: Theme.of(context).textTheme.subtitle1!.copyWith(fontWeight: FontWeight.w500),
-                onChanged: (_) {
-                  if (_debounce?.isActive ?? false) _debounce?.cancel();
-
-                  _debounce = Timer(const Duration(milliseconds: 300), () => setState(() {}));
-                },
-              ),
-              // TODO: Add date here.
-              // Text(timeago.format(selectedDate)),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(_selectedDate.toString(),
-                    style: theme.textTheme.caption!.copyWith(color: theme.disabledColor)),
-              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextField(
                   autofocus: true,
-                  controller: _contentController,
-                  decoration: _textEditingDecoration('Enter your todo\' notes here...'),
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle2!
-                      .copyWith(color: theme.textTheme.subtitle2!.color!.withOpacity(0.6)),
-                  onChanged: (value) {},
+                  controller: _titleController,
+                  decoration: _textEditingDecoration('Enter the title...'),
+                  style:
+                      Theme.of(context).textTheme.subtitle1!.copyWith(fontWeight: FontWeight.w500),
+                  onChanged: (_) {
+                    if (_debounce?.isActive ?? false) _debounce?.cancel();
+
+                    _debounce = Timer(const Duration(milliseconds: 300), () => setState(() {}));
+                  },
                 ),
               ),
-              const Spacer(),
+              _selectedDate != null
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(_selectedDate.toString(),
+                          style: theme.textTheme.caption!.copyWith(color: theme.disabledColor)),
+                    )
+                  : const SizedBox(),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+              //   child: TextField(
+              //     autofocus: true,
+              //     controller: _contentController,
+              //     decoration: _textEditingDecoration('Enter your todo\' notes here...'),
+              //     style: Theme.of(context)
+              //         .textTheme
+              //         .subtitle2!
+              //         .copyWith(color: theme.textTheme.subtitle2!.color!.withOpacity(0.6)),
+              //     onChanged: (value) {},
+              //   ),
+              // ),
+              // const Spacer(),
             ],
           ),
         ),
@@ -694,14 +738,14 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
                     final date = await showDatePicker(
                       context: context,
                       helpText: 'Help text here',
-                      initialDate: _selectedDate,
-                      firstDate: DateTime(2015, 8),
-                      lastDate: DateTime(2101),
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime.now().subtract(const Duration(days: 15)),
+                      lastDate: DateTime(2025),
                     );
                     if (date != null) {
                       final time = await showTimePicker(
                         context: context,
-                        initialTime: TimeOfDay.fromDateTime(_selectedDate),
+                        initialTime: TimeOfDay.fromDateTime(date),
                       );
                       if (time != null) {
                         setState(() {
@@ -714,7 +758,10 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
                       }
                     }
                   },
-                  icon: Icon(Icons.calendar_month),
+                  icon: Icon(
+                    Icons.calendar_month,
+                    color: _selectedDate != null ? Theme.of(context).primaryColor : Colors.white,
+                  ),
                 ),
                 const IconButton(onPressed: null, icon: Icon(Icons.repeat)),
                 const IconButton(onPressed: null, icon: Icon(Icons.location_on)),
