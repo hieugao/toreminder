@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-// import 'package:calendar_timeline/calendar_timeline.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-// import 'package:timeago/timeago.dart' as timeago;
+import 'package:grouped_list/grouped_list.dart';
+import 'package:notion_capture/common/extensions.dart';
 
 import '../../features/todo/models.dart';
 import 'view_models.dart';
@@ -45,6 +45,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final todayTodos = ref.watch(todayTodosFilteredProvider);
+    final weekTodos = ref.watch(weekTodosFilteredProvider);
     final todos = ref.watch(todoListProvider);
 
     final theme = Theme.of(context);
@@ -61,6 +63,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // TODO: Horizontal Calendar.
             // CalendarTimeline(
             //   // initialDate: DateTime(2020, 4, 20),
             //   // firstDate: DateTime(2019, 1, 15),
@@ -88,8 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               child: SizedBox(
                 height: height * 0.175,
                 child: _StatsBoard(
-                  completed: todos.where((todo) => todo.done).length,
-                  total: todos.length,
+                  completed: todayTodos.where((todo) => todo.done).length,
+                  total: todayTodos.length,
                 ),
               ),
             ),
@@ -108,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   // indicatorPadding: EdgeInsets.all(10),
                   padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                   indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     color: theme.primaryColor,
                   ),
                   tabs: [
@@ -136,19 +139,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: TabBarView(controller: _tabController, children: <Widget>[
                   _TodoListView(
-                    todos,
+                    todayTodos,
                     onChanged: (index, value) => ref
                         .read(todoListProvider.notifier)
                         .updateAt(index, todos[index].copyWith(done: value)),
                     onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
                   ),
-                  Container(
-                    color: Colors.yellow,
-                    child: Text("7 days"),
+                  // _TodoListView(
+                  //   weekTodos,
+                  //   onChanged: (index, value) => ref
+                  //       .read(todoListProvider.notifier)
+                  //       .updateAt(index, todos[index].copyWith(done: value)),
+                  //   onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
+                  // ),
+                  GroupedListView(
+                    elements: weekTodos,
+                    groupBy: (Todo todo) =>
+                        DateTime(todo.dueDate.year, todo.dueDate.month, todo.dueDate.day),
+                    groupSeparatorBuilder: (DateTime dt) => Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      child: Text(dt.toRelative()),
+                    ),
+                    indexedItemBuilder: (context, Todo todo, index) => Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: _TodoListTile(
+                        todo,
+                        onChanged: (value) => ref
+                            .read(todoListProvider.notifier)
+                            .updateAt(index, todos[index].copyWith(done: value)),
+                        onDeleted: () => ref.read(todoListProvider.notifier).removeAt(index),
+                      ),
+                    ),
                   ),
-                  Container(
-                    color: Colors.blue,
-                    child: Text("calnedar"),
+                  const Center(
+                    child: Text("This is a future feature!"),
                   )
                 ]),
               ),
@@ -339,7 +366,8 @@ class _StatsBoardState extends State<_StatsBoard> {
             height: 28,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: showLineChart ? Colors.purple.shade300 : Colors.red.shade300,
+              // color: showLineChart ? Colors.purple.shade300 : Colors.red.shade300,
+              color: Colors.orange,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.12),
@@ -351,7 +379,10 @@ class _StatsBoardState extends State<_StatsBoard> {
             child: IconButton(
               padding: const EdgeInsets.all(0),
               onPressed: () => setState(() => showLineChart = !showLineChart),
-              icon: const Icon(Icons.show_chart, size: 16),
+              icon: Icon(
+                showLineChart ? FontAwesomeIcons.clipboardCheck : FontAwesomeIcons.chartArea,
+                size: 14,
+              ),
               color: Colors.white.withOpacity(0.6),
             ),
           ),
@@ -575,6 +606,9 @@ class __TodoListTileState extends State<_TodoListTile> {
       // Specify a key if the Slidable is dismissible.
       key: ValueKey(widget.todo.id),
       endActionPane: ActionPane(
+        extentRatio: 0.4,
+        openThreshold: 0.1,
+        closeThreshold: 0.1,
         motion: const ScrollMotion(),
         children: [
           SlidableAction(
@@ -640,13 +674,20 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
   Timer? _debounce;
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  DateTime? _selectedDate;
+
+  final DateTime _now = DateTime.now();
+  late DateTime _selectedDate = DateTime(_now.year, _now.month, _now.day);
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  void _onAdded() {
+    widget.onAdded(Todo.initial(_titleController.text, _contentController.text, _selectedDate));
+    Navigator.pop(context);
   }
 
   @override
@@ -677,11 +718,20 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
               ),
               _selectedDate != null
                   ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(_selectedDate.toString(),
-                          style: theme.textTheme.caption!.copyWith(color: theme.disabledColor)),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(FontAwesomeIcons.clock, size: 14, color: theme.disabledColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            _selectedDate.toRelative(),
+                            style: theme.textTheme.caption!.copyWith(color: theme.disabledColor),
+                          ),
+                        ],
+                      ),
                     )
                   : const SizedBox(),
+              // TODO: Support Todo's note.
               // Padding(
               //   padding: const EdgeInsets.symmetric(vertical: 8.0),
               //   child: TextField(
@@ -715,26 +765,27 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
               children: [
                 IconButton(
                   onPressed: () async {
-//                       final picked = await showDateRangePicker(
-//                         context: context,
-//                         lastDate: dateRange.start,
-//                         firstDate: new DateTime(2019),
-//                       );
-//                       if (picked != null) {
-//                         // print(picked);
-//                         setState(
-//                           () {
-//                             dateRange = DateTimeRange(
-//                                 start: picked.start, end: picked.end);
-// //below have methods that runs once a date range is picked
-//                             // allWaterBillsFuture = _getAllWaterBillsFuture(
-//                             //     picked.start.toIso8601String(),
-//                             //     picked.end
-//                             //         .add(new Duration(hours: 24))
-//                             //         .toIso8601String());
-//                           },
-//                         );
-//                      }
+                    // TODO: Support Date Range Picker.
+                    // final picked = await showDateRangePicker(
+                    //   context: context,
+                    //   lastDate: dateRange.start,
+                    //   firstDate: new DateTime(2019),
+                    // );
+                    // if (picked != null) {
+                    //   // print(picked);
+                    //   setState(
+                    //     () {
+                    //       dateRange = DateTimeRange(start: picked.start, end: picked.end);
+                    //       // Below have methods that runs once a date range is picked
+                    //       //
+                    //       // allWaterBillsFuture = _getAllWaterBillsFuture(
+                    //       //     picked.start.toIso8601String(),
+                    //       //     picked.end
+                    //       //         .add(new Duration(hours: 24))
+                    //       //         .toIso8601String());
+                    //     },
+                    //   );
+                    // }
                     final date = await showDatePicker(
                       context: context,
                       helpText: 'Help text here',
@@ -749,11 +800,12 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
                       );
                       if (time != null) {
                         setState(() {
-                          _selectedDate = DateTime(date.year, date.month, time.hour, time.minute);
+                          _selectedDate =
+                              DateTime(date.year, date.month, date.day, time.hour, time.minute);
                         });
                       } else {
                         setState(() {
-                          _selectedDate = DateTime(date.year, date.month);
+                          _selectedDate = DateTime(date.year, date.month, date.day);
                         });
                       }
                     }
@@ -769,13 +821,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
                   child: ElevatedButton(
-                    onPressed: _titleController.text.isEmpty
-                        ? null
-                        : () {
-                            widget.onAdded(Todo.initial(
-                                _titleController.text, _contentController.text, _selectedDate));
-                            Navigator.pop(context);
-                          },
+                    onPressed: _titleController.text.isEmpty ? null : _onAdded,
                     child: Text('ADD',
                         style: Theme.of(context).textTheme.button!.copyWith(
                               color: Colors.white,

@@ -1,10 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notion_capture/features/todo/repository.dart';
 
+import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
+import '../../features/todo/repository.dart';
 
 final todoSharedPrefsRepositoryProvider =
     Provider<TodoRepository>((ref) => throw UnimplementedError());
+
+final todayTodosFilteredProvider = Provider<List<Todo>>((ref) {
+  final todos = ref.watch(todoListProvider);
+  return todos.where((todo) => todo.dueDate.isToday).toList();
+});
+
+final weekTodosFilteredProvider = Provider<List<Todo>>((ref) {
+  final todos = ref.watch(todoListProvider);
+  return todos.where((todo) => todo.dueDate.isThisWeek).toList();
+});
 
 final todoListProvider = StateNotifierProvider<TodoListViewModel, List<Todo>>((ref) {
   final _repo = ref.watch(todoSharedPrefsRepositoryProvider);

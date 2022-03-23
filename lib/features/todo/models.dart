@@ -11,11 +11,11 @@ class Todo with _$Todo {
     required String id,
     required String title,
     @Default('') String content,
-    DateTime? dueDate,
+    required DateTime dueDate,
     @Default(false) bool done,
   }) = _Todo;
 
-  factory Todo.initial(String title, String content, DateTime? dueDate) =>
+  factory Todo.initial(String title, String content, DateTime dueDate) =>
       Todo(id: UniqueKey().toString(), title: title, content: content, dueDate: dueDate);
 
   factory Todo.fromJson(Map<String, dynamic> json) => _$TodoFromJson(json);
