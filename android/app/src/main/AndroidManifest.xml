@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.notion_capture_upstream">
    <application
-        android:label="Notion Capture"
+        android:label="Toreminder"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
