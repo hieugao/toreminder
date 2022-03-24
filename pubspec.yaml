@@ -89,9 +89,11 @@ flutter_icons:
   adaptive_icon_foreground: "assets/logo-fg.png"
     
 flutter_native_splash:
-  color: "#303030"
-  image: assets/logo.png
-  fullscreen: true
+  color: "#151515"
+  image: assets/splash.png
+  android_gravity: center
+  branding: assets/branding.png
+  branding_mode: bottom
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
