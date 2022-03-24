@@ -85,8 +85,8 @@ dev_dependencies:
 flutter_icons:
   android: "launcher_icon"
   image_path: "assets/logo.png"
-  adaptive_icon_background: "assets/adaptive_back_xhdpi.png"
-  adaptive_icon_foreground: "assets/adaptive_fore_xhdpi.png"
+  adaptive_icon_background: "#9B60EC"
+  adaptive_icon_foreground: "assets/logo-fg.png"
     
 flutter_native_splash:
   color: "#303030"
