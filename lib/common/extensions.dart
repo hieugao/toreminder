@@ -10,7 +10,9 @@ extension DateTimeExtension on DateTime {
   }
 
   String toRelative() {
-    switch (difference(DateTime.now()).inDays) {
+    final now = DateTime.now();
+
+    switch (difference(DateTime(now.year, now.month, now.day)).inDays) {
       case -1:
         return 'Yesterday';
       case 0:
@@ -18,7 +20,8 @@ extension DateTimeExtension on DateTime {
       case 1:
         return 'Tomorrow';
       default:
-        return '${DateFormat('E').format(this)}, ${DateFormat('MMMd').format(this)}, ${DateFormat('Hm').format(this)}';
+        return '${DateFormat('E').format(this)}, ${DateFormat('MMMd').format(this)}';
+      //  ${hour != 0 && minute != 0 ? ', ' + DateFormat('Hm').format(this) : ""}';
     }
   }
 }

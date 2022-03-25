@@ -29,18 +29,16 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
   final _isCreatingTodo = false;
-  DateTime? _selectedDate = DateTime.now();
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this)
-      ..addListener(() {
-        setState(() {/* Reload `_TabBarItem` */});
-      });
+    _tabController = TabController(length: 3, vsync: this);
+    //   ..addListener(() {
+    //     setState(() {/* Reload `_TabBarItem` */});
+    //   });
   }
 
   @override
@@ -102,7 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Container(
+              child: SizedBox(
                 height: 40,
                 child: TabBar(
                   isScrollable: true,
@@ -141,43 +139,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
+                // TODO: Sort todos based on hour and minute.
                 child: TabBarView(controller: _tabController, children: <Widget>[
-                  _TodoListView(
-                    todayTodos,
-                    onChanged: (index, value) => ref
-                        .read(todoListProvider.notifier)
-                        .updateAt(index, todos[index].copyWith(done: value)),
-                    onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
-                  ),
-                  // _TodoListView(
-                  //   weekTodos,
-                  //   onChanged: (index, value) => ref
-                  //       .read(todoListProvider.notifier)
-                  //       .updateAt(index, todos[index].copyWith(done: value)),
-                  //   onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
-                  // ),
-                  GroupedListView(
-                    elements: weekTodos,
-                    groupBy: (Todo todo) =>
-                        DateTime(todo.dueDate.year, todo.dueDate.month, todo.dueDate.day),
-                    groupSeparatorBuilder: (DateTime dt) => Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      child: Text(dt.toRelative()),
-                    ),
-                    indexedItemBuilder: (context, Todo todo, index) => Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      child: _TodoListTile(
-                        todo,
-                        onChanged: (value) => ref
-                            .read(todoListProvider.notifier)
-                            .updateAt(index, todos[index].copyWith(done: value)),
-                        onDeleted: () => ref.read(todoListProvider.notifier).removeAt(index),
-                      ),
-                    ),
-                  ),
+                  todayTodos.isNotEmpty
+                      ? _TodoListView(
+                          todayTodos,
+                          onChanged: (index, value) => ref
+                              .read(todoListProvider.notifier)
+                              .updateAt(index, todos[index].copyWith(done: value)),
+                          onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
+                        )
+                      : const Center(child: Text('No todos for today')),
+                  weekTodos.isNotEmpty
+                      ? GroupedListView(
+                          elements: weekTodos,
+                          groupBy: (Todo todo) =>
+                              DateTime(todo.dueDate.year, todo.dueDate.month, todo.dueDate.day),
+                          groupSeparatorBuilder: (DateTime dt) => Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            child: Text(dt.toRelative()),
+                          ),
+                          indexedItemBuilder: (context, Todo todo, index) => Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            child: _TodoListTile(
+                              todo,
+                              onChanged: (value) => ref
+                                  .read(todoListProvider.notifier)
+                                  .updateAt(index, todos[index].copyWith(done: value)),
+                              onDeleted: () => ref.read(todoListProvider.notifier).removeAt(index),
+                            ),
+                          ),
+                        )
+                      : const Center(child: Text('No todos for next 7 days')),
                   const Center(
                     child: Text("This is a future feature!"),
                   )
