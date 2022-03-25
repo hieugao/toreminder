@@ -25,7 +25,7 @@ class Todo with _$Todo {
       'id': id,
       'title': title,
       'content': content,
-      'dueDate': dueDate?.toIso8601String(),
+      'dueDate': dueDate.toIso8601String(),
       'done': done.toString(),
     };
   }

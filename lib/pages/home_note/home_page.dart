@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:notion_capture/common/widgets.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../common/constants.dart' show Routes;
+import '../../common/widgets.dart';
 import '../../features/note/models.dart';
 import '../../services/connectivity_service.dart';
 

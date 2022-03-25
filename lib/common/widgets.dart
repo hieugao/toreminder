@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:notion_capture/features/note/models.dart';
+import '../features/note/models.dart';
 
 class TagProperty extends StatelessWidget {
   const TagProperty({

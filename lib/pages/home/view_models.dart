@@ -4,9 +4,6 @@ import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
 import '../../features/todo/repository.dart';
 
-final todoSharedPrefsRepositoryProvider =
-    Provider<TodoRepository>((ref) => throw UnimplementedError());
-
 final todayTodosFilteredProvider = Provider<List<Todo>>((ref) {
   final todos = ref.watch(todoListProvider);
   return todos.where((todo) => todo.dueDate.isToday).toList();
@@ -21,6 +18,9 @@ final todoListProvider = StateNotifierProvider<TodoListViewModel, List<Todo>>((r
   final _repo = ref.watch(todoSharedPrefsRepositoryProvider);
   return TodoListViewModel(_repo);
 });
+
+final todoSharedPrefsRepositoryProvider =
+    Provider<TodoRepository>((ref) => throw UnimplementedError());
 
 class TodoListViewModel extends StateNotifier<List<Todo>> {
   TodoListViewModel(this.repo) : super([]) {

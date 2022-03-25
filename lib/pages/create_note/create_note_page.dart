@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:notion_capture/common/widgets.dart';
 
+import '../../common/widgets.dart';
 import '../../features/note/models.dart';
 import '../home_note/view_models.dart';
 import './view_models.dart';

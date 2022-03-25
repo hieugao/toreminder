@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'package:notion_capture/common/extensions.dart';
 
+import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
 import 'view_models.dart';
 

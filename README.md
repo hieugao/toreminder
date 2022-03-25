@@ -1,8 +1,8 @@
-# ![logo-text](./assets/logo-text.png)
+![logo-text](assets/logo-text.png)
 
 ![](https://camo.githubusercontent.com/88bd58e13a123fda908ab14170a14e28ec30a36d28818be1e4d4fb437f4fca1b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4d61696e7461696e65642d7965732d677265656e2e737667) &nbsp; ![](https://github.com/emibcn/badge-action/workflows/.github/workflows/test.yml/badge.svg)
 
-<img align="right" src="./assets/slogan.png" />
+<img align="right" src="assets/slogan.png" />
 
 __A simple yet powerful to-do list app that will help you organize your tasks with ease.__
 
