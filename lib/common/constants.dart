@@ -1,4 +1,5 @@
 class Routes {
-  static String root = '/';
+  static String home = '/';
+  static String onboarding = '/onboarding';
   static String createNote = '/create-note';
 }

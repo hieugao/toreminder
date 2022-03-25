@@ -1,12 +1,14 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notion_capture/features/todo/repository.dart';
-import 'package:notion_capture/pages/home/view_models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import './features/note/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'features/note/services.dart';
+import 'features/todo/repository.dart';
+import 'pages/home/view_models.dart';
+import 'pages/onboarding/view_models.dart';
 import 'app.dart';
 
 Future<void> main() async {
@@ -32,7 +34,8 @@ Future<void> main() async {
         noteServiceProvider.overrideWithValue(NoteService(sharedPreferences)),
         notionDatabaseServiceProvider.overrideWithValue(NotionDatabaseService(sharedPreferences)),
         todoSharedPrefsRepositoryProvider
-            .overrideWithValue(TodoSharedPrefsRepository(sharedPreferences))
+            .overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
+        onBoardingSharedPrefsProvider.overrideWithValue(sharedPreferences),
       ],
       child: const MyApp(),
     ),

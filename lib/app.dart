@@ -1,12 +1,13 @@
-// import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
-import 'package:notion_capture/pages/home/home_screen.dart';
-// import 'package:notion_capture/pages/todo/todo.dart';
 
-import './common/constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:toreminder/pages/onboarding/view_models.dart';
+// import 'package:lottie/lottie.dart';
+
+import './common/constants.dart' show Routes;
 import './common/theme.dart';
-import './pages/home_note/home_page.dart';
-import './pages/create_note/create_note_page.dart';
+import 'pages/create_note/create_note_page.dart';
+import 'pages/home/home_screen.dart';
 import 'pages/onboarding/onboarding_screen.dart';
 
 class MyApp extends StatelessWidget {
@@ -14,27 +15,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Notion Capture',
-      theme: themeData,
-      // initialRoute: Routes.root,
-      // routes: {
-      //   Routes.root: (context) => const HomePage(),
-      //   Routes.createNote: (context) => const CreateNotePage(),
-      // },
-      // home: OnboardingScreen(),
-      home: HomeScreen(),
-      // home: FutureBuilder<void>(
-      //   future: _Init.instance.initialize(),
-      //   builder: (context, snapshot) {
-      //     if (snapshot.connectionState == ConnectionState.done) {
-      //       return const HomePage();
-      //     } else {
-      //       return const _SplashScreen();
-      //     }
-      //   },
-      // ),
+    return Consumer(
+      builder: (context, ref, child) {
+        final isOnBoarded = ref.watch(onBoardingProvider);
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Notion Capture',
+          theme: themeData,
+          initialRoute: isOnBoarded ? Routes.home : Routes.onboarding,
+          routes: {
+            Routes.home: (context) => const HomeScreen(),
+            Routes.onboarding: (context) => const OnboardingScreen(),
+            Routes.createNote: (context) => const CreateNotePage(),
+          },
+          // home: FutureBuilder<void>(
+          //   future: _Init.instance.initialize(),
+          //   builder: (context, snapshot) {
+          //     if (snapshot.connectionState == ConnectionState.done) {
+          //       return const HomePage();
+          //     } else {
+          //       return const _SplashScreen();
+          //     }
+          //   },
+          // ),
+        );
+      },
     );
   }
 }

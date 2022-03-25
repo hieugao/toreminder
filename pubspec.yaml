@@ -126,3 +126,6 @@ flutter:
           style: italic
         - asset: fonts/Montserrat-Bold.ttf
           weight: 700
+    - family: Bree
+      fonts:
+        - asset: fonts/BreeSerif-Regular.ttf

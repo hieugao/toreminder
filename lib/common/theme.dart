@@ -20,13 +20,15 @@ final themeData = ThemeData(
     buttonColor: Colors.orange[300],
     textTheme: ButtonTextTheme.normal,
   ),
-  // elevatedButtonTheme: ElevatedButtonThemeData(
-  //   style: ElevatedButton.styleFrom(
-  //     shape: RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.circular(10.0),
-  //     ),
-  //   ),
-  // ),
+
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      primary: Colors.orange[300],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+    ),
+  ),
 
   colorScheme: const ColorScheme.dark(
     secondary: Color(0xFF9B60EC),
