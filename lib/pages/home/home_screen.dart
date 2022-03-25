@@ -54,10 +54,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: Text('Hello, Rosie', style: theme.textTheme.headline6),
-        actions: const [_Avatar()],
+        title: Text(
+          'Hello, Rosie',
+          style: theme.textTheme.headline6!.copyWith(fontFamily: 'Bree'),
+        ),
+        actions: const [_UserAvatar()],
       ),
       body: SafeArea(
         child: Column(
@@ -279,21 +283,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 }
 
-class _Avatar extends StatelessWidget {
-  const _Avatar({Key? key}) : super(key: key);
+class _UserAvatar extends StatelessWidget {
+  const _UserAvatar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.all(10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.asset(
-          'assets/avatar.png',
-          // height: 40,
-          // width: 40,
-        ),
+      margin: const EdgeInsets.only(right: 8),
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          Image.asset(
+            'assets/user-avatar.png',
+            height: 36,
+            width: 36,
+          ),
+        ],
       ),
     );
   }
