@@ -1,6 +1,6 @@
 ![logo-text](assets/logo-text.png)
 
-![](https://camo.githubusercontent.com/88bd58e13a123fda908ab14170a14e28ec30a36d28818be1e4d4fb437f4fca1b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4d61696e7461696e65642d7965732d677265656e2e737667) &nbsp; ![](https://github.com/emibcn/badge-action/workflows/.github/workflows/test.yml/badge.svg)
+![](https://camo.githubusercontent.com/88bd58e13a123fda908ab14170a14e28ec30a36d28818be1e4d4fb437f4fca1b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4d61696e7461696e65642d7965732d677265656e2e737667) &nbsp; [![Build & Release](https://github.com/hieugao/toreminder/actions/workflows/release.yml/badge.svg)](https://github.com/hieugao/toreminder/actions/workflows/release.yml)
 
 <img align="right" src="assets/slogan.png" />
 
@@ -15,11 +15,13 @@ priority levels, labels, recurring due dates, ...
 
 &nbsp;
 
+&nbsp;
+
 --- 
 
-Today's To-dos           |  Next 7 Days To-dos  |  Creating New To-do
+Creating New Todo          |  Next 7 Days To-dos       | Video Showcase  
 :-------------------------:|:-------------------------:|:-------------------------:
-<img src="https://i.imgur.com/JATOoyn.png" height="540" width="260"> | <img src="https://i.imgur.com/JATOoyn.png" height="540" width="260"> | <img src="https://i.imgur.com/JATOoyn.png" height="540" width="260">
+<img src="https://user-images.githubusercontent.com/13729196/160230354-f8c9e460-f16e-49e5-8799-c7e801cfd346.jpg" width="300"> | <img src="https://user-images.githubusercontent.com/13729196/160230356-4f538c50-d82b-4178-9959-6e043b994de3.jpg" width="300"> | <video src="https://user-images.githubusercontent.com/13729196/160230360-5df56177-a2d2-4233-8cc4-aff0bb39a260.mp4">
 
 ## To-dos
 ### Next Big Releases
