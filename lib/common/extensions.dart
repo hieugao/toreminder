@@ -1,12 +1,17 @@
 import 'package:intl/intl.dart';
 
 extension DateTimeExtension on DateTime {
+  static get todayDateOnly {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   bool get isToday {
-    return difference(DateTime.now()).inDays == 0;
+    return difference(todayDateOnly).inDays == 0;
   }
 
   bool get isThisWeek {
-    return difference(DateTime.now()).inDays < 7;
+    return difference(todayDateOnly).inDays < 7;
   }
 
   String toRelative() {

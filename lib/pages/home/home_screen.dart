@@ -286,23 +286,25 @@ class _UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Theme.of(context).primaryColor,
+      child: Center(
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
-          ),
-          Image.asset(
-            'assets/user-avatar.png',
-            height: 36,
-            width: 36,
-          ),
-        ],
+            Image.asset(
+              'assets/user-avatar.png',
+              height: 32,
+              width: 32,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -365,7 +367,8 @@ class _StatsBoardState extends State<_StatsBoard> {
                     ),
                   ],
                 )
-              : _WeekLineChart(),
+              // : _WeekLineChart(),
+              : const Center(child: Text('This is a future feature!')),
         ),
         Positioned(
           top: 8,
