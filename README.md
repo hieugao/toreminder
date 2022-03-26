@@ -22,8 +22,22 @@ Today's To-dos           |  Next 7 Days To-dos  |  Creating New To-do
 <img src="https://i.imgur.com/JATOoyn.png" height="540" width="260"> | <img src="https://i.imgur.com/JATOoyn.png" height="540" width="260"> | <img src="https://i.imgur.com/JATOoyn.png" height="540" width="260">
 
 ## To-dos
+### Next Big Releases
+- [ ] Reminders
+- [ ] Statistics Board
+- [ ] Settings Page - time format, etc
+
+### Confirm Releases
+- [ ] Priority level
+- [ ] Label
+
+### Development
 - [ ] Add Unit and Golden (Widget) tests
 - [ ] Implement CI/CD via Github Actions
+- [ ] Refactoring
+- [ ] Reducing app size
+- [ ] Performance improvements
+
 
 ## Precursor
 The previous is Notion Capture which is bla bla bla, you could check out more about it [here](./notion_capture.md).
