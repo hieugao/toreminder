@@ -1,7 +1,7 @@
 on:
   push:
-    tag:
-      - "v*.*.*"
+    tags:
+      - "*"
 
 name: Build & Release
 
