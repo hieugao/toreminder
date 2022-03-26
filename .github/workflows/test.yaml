@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -20,7 +21,10 @@ jobs:
 
       - name: Fetch packages
         run: flutter packages pub get
-      
+          
+      - name: Code Generation
+        run: flutter packages pub run build_runner watch --delete-conflicting-outputs 
+
       - name: Run analyzer
         run: flutter analyze
           
