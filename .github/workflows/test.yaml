@@ -1,0 +1,27 @@
+name: Analyze & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      uses: subosito/flutter-action@v2
+      with:
+        channel: "stable"
+
+    - name: Fetch packages
+      run: flutter packages pub get
+    
+    - name: Run analyzer
+      run: flutter analyze
+        
+    # TODO: Run test
+    # - name: Run tests
+    # run: flutter test --coverage

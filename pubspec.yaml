@@ -1,5 +1,5 @@
 name: toreminder
-description: A new Flutter project.
+description: A Todo Management app
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -56,8 +56,8 @@ dependencies:
 
   # ------------------------------------------------------------------------- 
 
-  calendar_timeline:
-    path: ./packages/calendar_timeline
+  # calendar_timeline:
+  #   path: ./packages/calendar_timeline
   sqflite: ^2.0.2
   intl: ^0.17.0
   fl_chart: ^0.45.1
