@@ -23,6 +23,7 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 
 ## To-dos
 ### Next Big Releases
+- [ ] Desktop App - Linux, Windows
 - [ ] Reminders
 - [ ] Statistics Board
 - [ ] Settings Page - time format, etc
@@ -32,6 +33,7 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 - [ ] Label
 
 ### Development
+- [ ] Responsive & Adaptive
 - [ ] Add Unit and Golden (Widget) tests
 - [ ] Implement CI/CD via Github Actions
 - [ ] Refactoring
