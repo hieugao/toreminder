@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:grouped_list/grouped_list.dart';
+// import 'package:responsive_framework/responsive_framework.dart';
 
 import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
@@ -65,29 +66,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // TODO: Horizontal Calendar.
-            // CalendarTimeline(
-            //   // initialDate: DateTime(2020, 4, 20),
-            //   // firstDate: DateTime(2019, 1, 15),
-            //   // lastDate: DateTime(2020, 11, 20),
-            //   initialDate: _selectedDate!,
-            //   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
-            //   // lastDate: _selectedDate!.add(const Duration(days: 14)),
-            //   firstDate: DateTime(2022, 02, 20),
-            //   lastDate: DateTime(2022, 03, 20),
-            //   onDateSelected: (date) => setState(() {
-            //     _selectedDate = date;
-            //   }),
-            //   leftMargin: 0,
-            //   monthColor: theme.disabledColor,
-            //   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
-            //   activeDayColor: theme.textTheme.bodyText1!.color,
-            //   activeBackgroundDayColor: const Color(0xFF5d4efe),
-            //   dotsColor: const Color(0xFF333A47),
-            //   selectableDayPredicate: (date) => date.day != 23,
-            //   locale: 'en_ISO',
-            // ),
-            // const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: SizedBox(
@@ -183,52 +161,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           ],
         ),
       ),
-      // TODO: Later.
-      // bottomNavigationBar: SizedBox(
-      //   height: _kBottomBarHeight,
-      //   child: BottomAppBar(
-      //     elevation: 8,
-      //     shape: const CircularNotchedRectangle(),
-      //     child: Row(
-      //       mainAxisSize: MainAxisSize.max,
-      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //       children: <Widget>[
-      //         Row(
-      //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      //           children: [
-      //             SizedBox(width: 16),
-      //             IconButton(
-      //               icon: Icon(
-      //                 Icons.home,
-      //                 color: Theme.of(context).disabledColor,
-      //               ),
-      //               onPressed: () {},
-      //             ),
-      //             SizedBox(width: 16),
-      //             IconButton(
-      //               icon: Icon(
-      //                 Icons.settings,
-      //                 color: Theme.of(context).disabledColor,
-      //               ),
-      //               onPressed: () {},
-      //             ),
-      //           ],
-      //         ),
-      //         // SizedBox(width: 48.0),
-      //         Padding(
-      //           padding: const EdgeInsets.only(right: 40),
-      //           child: IconButton(
-      //             icon: Icon(
-      //               Icons.search,
-      //               color: Theme.of(context).disabledColor,
-      //             ),
-      //             onPressed: () {},
-      //           ),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // ),
+      // TODO: Add Bottom Navigation Bar.
+      // bottomNavigationBar: null,
       // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _isCreatingTodo
           ? null
@@ -279,6 +213,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 }
 
+// TODO: Desktop support.
+// class _SideMenu extends StatelessWidget {
+//   const _SideMenu({Key? key}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Drawer(
+//       backgroundColor: const Color(0xFF202427),
+//       child: ListView(
+//         children: const [
+//           _TodoTabBarItem(
+//             icon: Icons.calendar_today,
+//             label: 'Today',
+//             isSelected: true,
+//             // isSelected: _tabController.index == 0,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 class _UserAvatar extends StatelessWidget {
   const _UserAvatar({Key? key}) : super(key: key);
 
@@ -309,6 +265,30 @@ class _UserAvatar extends StatelessWidget {
     );
   }
 }
+
+// TODO: Horizontal Calendar.
+// CalendarTimeline(
+//   // initialDate: DateTime(2020, 4, 20),
+//   // firstDate: DateTime(2019, 1, 15),
+//   // lastDate: DateTime(2020, 11, 20),
+//   initialDate: _selectedDate!,
+//   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
+//   // lastDate: _selectedDate!.add(const Duration(days: 14)),
+//   firstDate: DateTime(2022, 02, 20),
+//   lastDate: DateTime(2022, 03, 20),
+//   onDateSelected: (date) => setState(() {
+//     _selectedDate = date;
+//   }),
+//   leftMargin: 0,
+//   monthColor: theme.disabledColor,
+//   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
+//   activeDayColor: theme.textTheme.bodyText1!.color,
+//   activeBackgroundDayColor: const Color(0xFF5d4efe),
+//   dotsColor: const Color(0xFF333A47),
+//   selectableDayPredicate: (date) => date.day != 23,
+//   locale: 'en_ISO',
+// ),
+// const SizedBox(height: 16),
 
 class _StatsBoard extends StatefulWidget {
   const _StatsBoard({
@@ -1036,3 +1016,50 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
 //     );
 //   }
 // }
+
+// TODO: Bottom Navigation Bar.
+// bottomNavigationBar: SizedBox(
+//   height: _kBottomBarHeight,
+//   child: BottomAppBar(
+//     elevation: 8,
+//     shape: const CircularNotchedRectangle(),
+//     child: Row(
+//       mainAxisSize: MainAxisSize.max,
+//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//       children: <Widget>[
+//         Row(
+//           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//           children: [
+//             SizedBox(width: 16),
+//             IconButton(
+//               icon: Icon(
+//                 Icons.home,
+//                 color: Theme.of(context).disabledColor,
+//               ),
+//               onPressed: () {},
+//             ),
+//             SizedBox(width: 16),
+//             IconButton(
+//               icon: Icon(
+//                 Icons.settings,
+//                 color: Theme.of(context).disabledColor,
+//               ),
+//               onPressed: () {},
+//             ),
+//           ],
+//         ),
+//         // SizedBox(width: 48.0),
+//         Padding(
+//           padding: const EdgeInsets.only(right: 40),
+//           child: IconButton(
+//             icon: Icon(
+//               Icons.search,
+//               color: Theme.of(context).disabledColor,
+//             ),
+//             onPressed: () {},
+//           ),
+//         ),
+//       ],
+//     ),
+//   ),
+// ),
