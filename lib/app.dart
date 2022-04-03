@@ -8,7 +8,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import './common/constants.dart' show Routes;
 import './common/theme.dart';
 import 'pages/create_note/create_note_page.dart';
-import 'pages/home/home_screen.dart';
+import 'pages/dashboard/dashboard_screen.dart';
 import 'pages/onboarding/onboarding_screen.dart';
 import 'pages/onboarding/view_models.dart';
 
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
           theme: themeData,
           initialRoute: isOnBoarded ? Routes.home : Routes.onboarding,
           routes: {
-            Routes.home: (context) => const HomeScreen(),
+            Routes.home: (context) => const DashboardScreen(),
             Routes.onboarding: (context) => const OnboardingScreen(),
             Routes.createNote: (context) => const CreateNotePage(),
           },

@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/note/services.dart';
 import 'features/todo/repository.dart';
-import 'pages/home/view_models.dart';
+import 'pages/dashboard/view_model.dart';
 import 'pages/onboarding/view_models.dart';
 import 'app.dart';
 

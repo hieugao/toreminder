@@ -11,7 +11,7 @@ import 'package:grouped_list/grouped_list.dart';
 
 import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
-import 'view_models.dart';
+import 'view_model.dart';
 
 const _kBottomBarHeight = 64.0;
 
@@ -22,14 +22,14 @@ _textEditingDecoration(String hint) => InputDecoration(
       border: InputBorder.none,
     );
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class DashboardScreen extends ConsumerStatefulWidget {
+  const DashboardScreen({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerProviderStateMixin {
   final _isCreatingTodo = false;
   late TabController _tabController;
 
