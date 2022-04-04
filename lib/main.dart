@@ -9,8 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/note/services.dart';
 import 'features/todo/repository.dart';
-import 'pages/dashboard/view_model.dart';
 import 'pages/onboarding/view_models.dart';
+import 'features/todo/providers.dart';
 import 'app.dart';
 
 Future<void> main() async {
@@ -35,8 +35,7 @@ Future<void> main() async {
       overrides: [
         noteServiceProvider.overrideWithValue(NoteService(sharedPreferences)),
         notionDatabaseServiceProvider.overrideWithValue(NotionDatabaseService(sharedPreferences)),
-        todoSharedPrefsRepositoryProvider
-            .overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
+        todoRepositoryProvider.overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
         onBoardingSharedPrefsProvider.overrideWithValue(sharedPreferences),
       ],
       child: DevicePreview(

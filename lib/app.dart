@@ -8,7 +8,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import './common/constants.dart' show Routes;
 import './common/theme.dart';
 import 'pages/create_note/create_note_page.dart';
-import 'pages/dashboard/dashboard_screen.dart';
+import 'pages/dashboard_screen.dart';
 import 'pages/onboarding/onboarding_screen.dart';
 import 'pages/onboarding/view_models.dart';
 

@@ -11,7 +11,7 @@ import 'package:grouped_list/grouped_list.dart';
 
 import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
-import 'view_model.dart';
+import '../features/todo/providers.dart';
 
 const _kBottomBarHeight = 64.0;
 
