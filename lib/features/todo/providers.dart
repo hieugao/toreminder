@@ -4,39 +4,20 @@ import '../../../common/extensions.dart';
 import '../../../features/todo/models.dart';
 import '../../../features/todo/repository.dart';
 
-enum TodoFilter {
-  none,
-  today,
-  week,
-}
-
-final todoFilterProvider = StateProvider((ref) => TodoFilter.none);
-
-final filteredTodoListProvider = Provider<List<Todo>>((ref) {
-  final filter = ref.watch(todoFilterProvider);
+final todayTodosFilteredProvider = Provider<List<Todo>>((ref) {
   final todos = ref.watch(todoListProvider);
+  return todos.where((todo) => todo.dueDate.isToday).toList();
+});
 
-  switch (filter) {
-    case TodoFilter.none:
-      return todos;
-    case TodoFilter.today:
-      return todos.where((todo) => todo.dueDate.isToday).toList();
-    case TodoFilter.week:
-      return todos.where((todo) => todo.dueDate.isThisWeek).toList();
-  }
+final weekTodosFilteredProvider = Provider<List<Todo>>((ref) {
+  final todos = ref.watch(todoListProvider);
+  return todos.where((todo) => todo.dueDate.isThisWeek).toList();
 });
 
 final todoListProvider = StateNotifierProvider<TodoListNotifier, List<Todo>>((ref) {
   final _repo = ref.watch(todoRepositoryProvider);
-  // final _todos = ref.watch(todoListFutureProvider);
   return TodoListNotifier(_repo);
-  // return TodoListNotifier(_todos.asData?.value ?? [], _repo);
 });
-
-// final todoListFutureProvider = FutureProvider<List<Todo>>((ref) async {
-//   final _repo = ref.watch(todoRepositoryProvider);
-//   return await _repo.todos();
-// });
 
 final todoRepositoryProvider = Provider<TodoRepository>((ref) => throw UnimplementedError());
 
