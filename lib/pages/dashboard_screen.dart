@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:fl_chart/fl_chart.dart';
+// import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -83,12 +83,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                 child: TabBar(
                   isScrollable: true,
                   controller: _tabController,
-                  // unselectedLabelColor: const Color(0xffacb3bf),
-                  // labelColor: Colors.black,
-                  // indicatorColor: Colors.transparent,
-                  // indicatorSize: TabBarIndicatorSize.tab,
-                  // indicatorWeight: 3.0,
-                  // indicatorPadding: EdgeInsets.all(10),
                   padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                   indicator: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -202,7 +196,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                     // padding: const EdgeInsets.all(16),
                     child: Consumer(builder: (context, ref, child) {
                       return _CreateTodoMBS(
-                        onAdded: (todo) => ref.read(todoListProvider.notifier).add(todo),
+                        onAdded: (todo) {
+                          ref.read(todoListProvider.notifier).add(todo);
+                          ScaffoldMessenger.of(context).showSnackBar(_snackBar(context));
+                        },
                       );
                     }),
                   ),
@@ -384,116 +381,117 @@ class _StatsBoardState extends State<_StatsBoard> {
   }
 }
 
-class _WeekLineChart extends StatelessWidget {
-  const _WeekLineChart({Key? key}) : super(key: key);
+// TODO: Add Weekly Statistics.
+// class _WeekLineChart extends StatelessWidget {
+//   const _WeekLineChart({Key? key}) : super(key: key);
 
-  static const List<Color> gradientColors = [
-    Color(0xff23b6e6),
-    Color(0xff02d39a),
-  ];
+//   static const List<Color> gradientColors = [
+//     Color(0xff23b6e6),
+//     Color(0xff02d39a),
+//   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: true,
-          horizontalInterval: 1,
-          verticalInterval: 1,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: const Color(0xff37434d),
-              strokeWidth: 1,
-            );
-          },
-          getDrawingVerticalLine: (value) {
-            return FlLine(
-              color: const Color(0xff37434d),
-              strokeWidth: 1,
-            );
-          },
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          rightTitles: SideTitles(showTitles: false),
-          topTitles: SideTitles(showTitles: false),
-          bottomTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 22,
-            interval: 1,
-            getTextStyles: (context, value) => const TextStyle(
-                color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
-            getTitles: (value) {
-              switch (value.toInt()) {
-                case 2:
-                  return 'MAR';
-                case 5:
-                  return 'JUN';
-                case 8:
-                  return 'SEP';
-              }
-              return '';
-            },
-            margin: 8,
-          ),
-          leftTitles: SideTitles(
-            showTitles: true,
-            interval: 1,
-            getTextStyles: (context, value) => const TextStyle(
-              color: Color(0xff67727d),
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-            getTitles: (value) {
-              switch (value.toInt()) {
-                case 1:
-                  return '10k';
-                case 3:
-                  return '30k';
-                case 5:
-                  return '50k';
-              }
-              return '';
-            },
-            reservedSize: 32,
-            margin: 12,
-          ),
-        ),
-        borderData:
-            FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
-        minX: 0,
-        maxX: 11,
-        minY: 0,
-        maxY: 6,
-        lineBarsData: [
-          LineChartBarData(
-            spots: const [
-              FlSpot(0, 3),
-              FlSpot(2.6, 2),
-              FlSpot(4.9, 5),
-              FlSpot(6.8, 3.1),
-              FlSpot(8, 4),
-              FlSpot(9.5, 3),
-              FlSpot(11, 4),
-            ],
-            isCurved: true,
-            colors: gradientColors,
-            barWidth: 5,
-            isStrokeCapRound: true,
-            dotData: FlDotData(
-              show: false,
-            ),
-            belowBarData: BarAreaData(
-              show: true,
-              colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return LineChart(
+//       LineChartData(
+//         gridData: FlGridData(
+//           show: true,
+//           drawVerticalLine: true,
+//           horizontalInterval: 1,
+//           verticalInterval: 1,
+//           getDrawingHorizontalLine: (value) {
+//             return FlLine(
+//               color: const Color(0xff37434d),
+//               strokeWidth: 1,
+//             );
+//           },
+//           getDrawingVerticalLine: (value) {
+//             return FlLine(
+//               color: const Color(0xff37434d),
+//               strokeWidth: 1,
+//             );
+//           },
+//         ),
+//         titlesData: FlTitlesData(
+//           show: true,
+//           rightTitles: SideTitles(showTitles: false),
+//           topTitles: SideTitles(showTitles: false),
+//           bottomTitles: SideTitles(
+//             showTitles: true,
+//             reservedSize: 22,
+//             interval: 1,
+//             getTextStyles: (context, value) => const TextStyle(
+//                 color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
+//             getTitles: (value) {
+//               switch (value.toInt()) {
+//                 case 2:
+//                   return 'MAR';
+//                 case 5:
+//                   return 'JUN';
+//                 case 8:
+//                   return 'SEP';
+//               }
+//               return '';
+//             },
+//             margin: 8,
+//           ),
+//           leftTitles: SideTitles(
+//             showTitles: true,
+//             interval: 1,
+//             getTextStyles: (context, value) => const TextStyle(
+//               color: Color(0xff67727d),
+//               fontWeight: FontWeight.bold,
+//               fontSize: 15,
+//             ),
+//             getTitles: (value) {
+//               switch (value.toInt()) {
+//                 case 1:
+//                   return '10k';
+//                 case 3:
+//                   return '30k';
+//                 case 5:
+//                   return '50k';
+//               }
+//               return '';
+//             },
+//             reservedSize: 32,
+//             margin: 12,
+//           ),
+//         ),
+//         borderData:
+//             FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
+//         minX: 0,
+//         maxX: 11,
+//         minY: 0,
+//         maxY: 6,
+//         lineBarsData: [
+//           LineChartBarData(
+//             spots: const [
+//               FlSpot(0, 3),
+//               FlSpot(2.6, 2),
+//               FlSpot(4.9, 5),
+//               FlSpot(6.8, 3.1),
+//               FlSpot(8, 4),
+//               FlSpot(9.5, 3),
+//               FlSpot(11, 4),
+//             ],
+//             isCurved: true,
+//             colors: gradientColors,
+//             barWidth: 5,
+//             isStrokeCapRound: true,
+//             dotData: FlDotData(
+//               show: false,
+//             ),
+//             belowBarData: BarAreaData(
+//               show: true,
+//               colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class _TodoTabBarItem extends StatelessWidget {
   const _TodoTabBarItem({
@@ -830,192 +828,32 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
   }
 }
 
-// class _TodoScreenState extends State<TodoScreen> {
-//   @override
-//   Widget build(BuildContext context) {
-//   }
-// }
-
-// class DashboardCalendarTimeline extends StatefulWidget {
-//   @override
-//   _DashboardCalendarTimeline createState() => _DashboardCalendarTimeline();
-// }
-
-// class _DashboardCalendarTimeline extends State<DashboardCalendarTimeline> {
-//   late DateTime _selectedDate;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _resetSelectedDate();
-//   }
-
-//   void _resetSelectedDate() {
-//     _selectedDate = DateTime.now().add(Duration(days: 5));
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Color(0xFF333A47),
-//       body: SafeArea(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: <Widget>[
-//             Padding(
-//               padding: const EdgeInsets.all(16),
-//               child: Text(
-//                 'Calendar Timeline',
-//                 style:
-//                     Theme.of(context).textTheme.headline6!.copyWith(color: Colors.tealAccent[100]),
-//               ),
-//             ),
-//             CalendarTimeline(
-//               showYears: true,
-//               initialDate: _selectedDate,
-//               firstDate: DateTime.now(),
-//               lastDate: DateTime.now().add(Duration(days: 365 * 4)),
-//               onDateSelected: (date) {
-//                 setState(() {
-//                   _selectedDate = date ?? DateTime.now();
-//                 });
-//               },
-//               leftMargin: 20,
-//               monthColor: Colors.white70,
-//               dayColor: Colors.teal[200],
-//               dayNameColor: Color(0xFF333A47),
-//               activeDayColor: Colors.white,
-//               activeBackgroundDayColor: Colors.redAccent[100],
-//               dotsColor: Color(0xFF333A47),
-//               selectableDayPredicate: (date) => date.day != 23,
-//               locale: 'en',
-//             ),
-//             SizedBox(height: 20),
-//             Padding(
-//               padding: const EdgeInsets.only(left: 16),
-//               child: TextButton(
-//                 style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.teal[200])),
-//                 child: Text('RESET', style: TextStyle(color: Color(0xFF333A47))),
-//                 onPressed: () => setState(() => _resetSelectedDate()),
-//               ),
-//             ),
-//             SizedBox(height: 20),
-//             Center(
-//                 child:
-//                     Text('Selected date is $_selectedDate', style: TextStyle(color: Colors.white)))
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class _DateRangeWidget extends StatefulWidget {
-//   _DateRangeWidget({Key? key}) : super(key: key);
-
-//   @override
-//   State<_DateRangeWidget> createState() => _DateRangeWidgetState();
-// }
-
-// class _DateRangeWidgetState extends State<_DateRangeWidget> {
-//   DateTimeRange dateRange = DateTimeRange(
-//     start: DateTime(2021, 11, 5),
-//     end: DateTime(2022, 12, 10),
-//   );
-//   @override
-//   Widget build(BuildContext context) {
-//     final start = dateRange.start;
-//     final end = dateRange.end;
-
-//     return Column(children: [
-//       const Text(
-//         'Date Range',
-//         style: TextStyle(fontSize: 16),
-//       ),
-//       Row(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Container(
-//             child: ElevatedButton(
-//               child: Text(
-//                 '${start.year}/${start.month}/${start.day}',
-//               ),
-//               onPressed: pickDateRange,
-//             ),
-//           ),
-//           Container(
-//             margin: EdgeInsets.only(left: 20),
-//             child: ElevatedButton(
-//               child: Text(
-//                 '${end.year}/${end.month}/${end.day}',
-//               ),
-//               onPressed: pickDateRange,
-//             ),
-//           ),
-//         ],
-//       )
-//     ]);
-//   }
-
-//   Future pickDateRange() async {
-//     DateTimeRange? newDateRange = await showDateRangePicker(
-//       context: context,
-//       initialDateRange: dateRange,
-//       firstDate: DateTime(2019),
-//       lastDate: DateTime(2023),
-//     );
-//     setState(() {
-//       dateRange = newDateRange ?? dateRange;
-
-//       // if (newDateRange == null) return;
-//       // setState(() => dateRange = newDateRange);
-//     });
-//   }
-// }
-
-// class _BottomNavBar extends StatelessWidget {
-//   _BottomNavBar({Key? key, required this.isCreatingTodo}) : super(key: key);
-
-//   final bool isCreatingTodo;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       height: 64,
-//       child: BottomAppBar(
-//         shape: isCreatingTodo ? null : const CircularNotchedRectangle(),
-//         notchMargin: 8.0,
-//         child: isCreatingTodo ? _createTodoNavBar : _navBar(context),
-//       ),
-//     );
-//   }
-
-//   Widget _createTodoNavBar = Container();
-
-//   Widget _navBar(BuildContext context) {
-//     return Row(
-//       mainAxisSize: MainAxisSize.max,
-//       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//       children: <Widget>[
-//         IconButton(
-//           icon: Icon(
-//             Icons.show_chart,
-//             color: Theme.of(context).disabledColor,
-//           ),
-//           onPressed: () {},
-//         ),
-//         SizedBox(width: 48.0),
-//         IconButton(
-//           icon: Icon(
-//             Icons.filter_list,
-//             color: Theme.of(context).disabledColor,
-//           ),
-//           onPressed: () {},
-//         ),
-//       ],
-//     );
-//   }
-// }
+_snackBar(BuildContext context) => SnackBar(
+      elevation: 12,
+      // behavior: SnackBarBehavior.floating,
+      // margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      backgroundColor: Colors.grey.shade700,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      content: Container(
+        padding: const EdgeInsets.only(left: 8),
+        // decoration: BoxDecoration(
+        //   color: Colors.grey.shade700,
+        //   borderRadius: BorderRadius.circular(8),
+        // ),
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.green, size: 32),
+            const SizedBox(width: 8),
+            Text(
+              'Todo Added!',
+              style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                    fontSize: 16,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
 
 // TODO: Bottom Navigation Bar.
 // bottomNavigationBar: SizedBox(

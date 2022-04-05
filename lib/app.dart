@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-// import 'package:lottie/lottie.dart';
 
 import './common/constants.dart' show Routes;
 import './common/theme.dart';
@@ -24,19 +23,17 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           useInheritedMediaQuery: true,
           locale: DevicePreview.locale(context),
-          builder: (context, child) {
-            return DevicePreview.appBuilder(
-              context,
-              ResponsiveWrapper.builder(
-                ClampingScrollWrapper.builder(context, child!),
-                breakpoints: const [
-                  ResponsiveBreakpoint.resize(350, name: MOBILE),
-                  ResponsiveBreakpoint.autoScale(600, name: TABLET),
-                  ResponsiveBreakpoint.resize(840, name: DESKTOP),
-                  ResponsiveBreakpoint.autoScale(1600, name: 'XL'),
-                ],
-              ),
+          builder: (context, widget) {
+            final responsive = ResponsiveWrapper.builder(
+              ClampingScrollWrapper.builder(context, widget!),
+              breakpoints: const [
+                ResponsiveBreakpoint.resize(350, name: MOBILE),
+                ResponsiveBreakpoint.autoScale(600, name: TABLET),
+                ResponsiveBreakpoint.resize(840, name: DESKTOP),
+                ResponsiveBreakpoint.autoScale(1600, name: 'XL'),
+              ],
             );
+            return DevicePreview.appBuilder(context, responsive);
           },
           debugShowCheckedModeBanner: false,
           title: 'Notion Capture',
@@ -47,50 +44,8 @@ class MyApp extends StatelessWidget {
             Routes.onboarding: (context) => const OnboardingScreen(),
             Routes.createNote: (context) => const CreateNotePage(),
           },
-          // home: FutureBuilder<void>(
-          //   future: _Init.instance.initialize(),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.done) {
-          //       return const HomePage();
-          //     } else {
-          //       return const _SplashScreen();
-          //     }
-          //   },
-          // ),
         );
       },
     );
   }
 }
-
-// class _SplashScreen extends StatelessWidget {
-//   const _SplashScreen({Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final width = MediaQuery.of(context).size.width;
-//     final height = MediaQuery.of(context).size.height;
-
-//     return Scaffold(
-//       body: Column(
-//         mainAxisSize: MainAxisSize.max,
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           SizedBox(height: 48, width: 48, child: Image.asset('assets/logo.png')),
-//           const Align(alignment: Alignment.bottomCenter, child: const Text('Notion Capture')),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class _Init {
-//   _Init._();
-//   static final instance = _Init._();
-
-//   Future initialize() async {
-//     await Future.delayed(const Duration(seconds: 25));
-
-//     // TODO: Fetch notes!
-//   }
-// }
