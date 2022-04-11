@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,12 +19,11 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
   final sharedPreferences = await SharedPreferences.getInstance();
 
-  // TODO: Disable this.
   // ! Android only.
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    // systemNavigationBarColor: Colors.blue,
-    statusBarColor: Color(0xFF151515),
-  ));
+  // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+  //   // systemNavigationBarColor: Colors.blue,
+  //   statusBarColor: Color(0xFF151515),
+  // ));
 
   // Source: https://github.com/jonbhanson/flutter_native_splash/blob/master/example/lib/main.dart
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,

@@ -13,6 +13,10 @@ import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
 import '../features/todo/providers.dart';
 
+final addTodoKey = UniqueKey();
+final addButtonKey = UniqueKey();
+final todayTodoCountKey = UniqueKey();
+
 const _kBottomBarHeight = 64.0;
 
 _textEditingDecoration(String hint) => InputDecoration(
@@ -318,6 +322,7 @@ class _StatsBoardState extends State<_StatsBoard> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Column(
+                      key: todayTodoCountKey,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -670,6 +675,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
 
   @override
   void dispose() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
@@ -694,6 +700,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextField(
+                  key: addTodoKey,
                   autofocus: true,
                   controller: _titleController,
                   decoration: _textEditingDecoration('Enter the title...'),
@@ -811,6 +818,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
                   child: ElevatedButton(
+                    key: addButtonKey,
                     onPressed: _titleController.text.isEmpty ? null : _onAdded,
                     child: Text('ADD',
                         style: Theme.of(context).textTheme.button!.copyWith(

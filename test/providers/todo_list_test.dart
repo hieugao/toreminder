@@ -9,6 +9,14 @@ import 'package:toreminder/features/todo/providers.dart';
 
 class MockTodoRepository extends Mock implements TodoRepository {}
 
+final todos = [
+  Todo(id: '1', title: 'Buy milk', dueDate: DateTime.now()),
+  Todo(id: '2', title: 'Buy eggs', dueDate: DateTime.now()),
+  Todo(id: '3', title: 'Buy cat food', dueDate: DateTime.now()),
+];
+
+final newTodo = Todo(id: '4', title: 'Clean living room', dueDate: DateTime.now());
+
 class Listener extends Mock {
   void call(List<Todo>? previous, List<Todo> value);
 }
@@ -20,31 +28,16 @@ void main() {
     mockTodoRepository = MockTodoRepository();
   });
 
-  final todos = [
-    Todo(
-      id: '1',
-      title: 'Buy milk',
-      dueDate: DateTime.now(),
-    ),
-    Todo(
-      id: '2',
-      title: 'Buy eggs',
-      dueDate: DateTime.now(),
-    ),
-  ];
-
-  final newTodo = Todo(id: '3', title: 'Clean living room', dueDate: DateTime.now());
-
-  void arrangeTodoRepository() {
-    when(() => mockTodoRepository.save(any())).thenAnswer((_) async => Future.value());
-  }
-
   ProviderContainer overrideValue() => ProviderContainer(overrides: [
         todoListProvider.overrideWithValue(TodoListNotifier.create(
           List.from(todos),
           mockTodoRepository,
         )),
       ]);
+
+  void arrangeTodoRepository() {
+    when(() => mockTodoRepository.save(any())).thenAnswer((_) async => Future.value());
+  }
 
   test('Defaults to "todos" and notify listeners when value changes', () {
     final container = overrideValue();
@@ -62,7 +55,7 @@ void main() {
     arrangeTodoRepository();
     container.read(todoListProvider.notifier).add(newTodo);
 
-    // Recheck.
+    // Check.
     verify(() => listener(todos, [...todos, newTodo])).called(1);
     verifyNoMoreInteractions(listener);
   });

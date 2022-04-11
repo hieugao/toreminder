@@ -14,6 +14,8 @@ class OnBoardingViewModel extends StateNotifier<bool> {
     state = _prefs.getBool(_key) ?? false;
   }
 
+  OnBoardingViewModel.create(bool state, this._prefs) : super(state);
+
   final SharedPreferences _prefs;
 
   String get _key => 'onBoard';

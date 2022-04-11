@@ -19,14 +19,14 @@ jobs:
         with:
             channel: "stable"
 
-      - name: Fetch packages
+      - name: Get Packages
         run: flutter packages pub get
           
       - name: Code Generation
         run: flutter packages pub run build_runner build --delete-conflicting-outputs
 
-      - name: Run analyzer
+      - name: Run Analyzer
         run: flutter analyze --no-fatal-infos
           
-      - name: Run tests
+      - name: Run Test
         run: flutter test
