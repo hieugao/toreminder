@@ -5,9 +5,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:grouped_list/grouped_list.dart';
 // import 'package:responsive_framework/responsive_framework.dart';
 
-import '../../../common/extensions.dart';
-import '../../../features/todo/models.dart';
+import '../../common/extensions.dart';
+import '../../features/todo/models.dart';
 import '../../features/todo/providers.dart';
+import '../../gen/fonts.gen.dart';
 
 import 'widgets.dart';
 
@@ -51,7 +52,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
         backgroundColor: Colors.transparent,
         title: Text(
           'Hello, Rosie',
-          style: theme.textTheme.headline6!.copyWith(fontFamily: 'Bree'),
+          style: theme.textTheme.headline6!.copyWith(fontFamily: FontFamily.bree),
         ),
         actions: const [UserAvatar()],
       ),

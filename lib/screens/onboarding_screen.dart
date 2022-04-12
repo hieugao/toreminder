@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../common/constants.dart';
 import '../features/onboarding/providers.dart';
+import '../gen/assets.gen.dart';
+import '../gen/fonts.gen.dart';
 
 // Ref: https://www.youtube.com/watch?v=8eRQyE2PN7w
 class OnboardingScreen extends StatefulWidget {
@@ -50,10 +52,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       physics: const ClampingScrollPhysics(),
                       controller: _pageController,
                       onPageChanged: (int page) => setState(() => _current = page),
-                      children: const [
+                      children: [
                         // TODO: Create a data model for these pages.
                         _OnboardingPage(
-                          asset: 'assets/onboarding1.png',
+                          asset: Assets.onboarding1.path,
                           title: 'Oh, Hi there!\nWelcome to Toreminder.',
                           description:
                               'One quick question, have you ever forgotten something important'
@@ -61,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ' you came to the right place.',
                         ),
                         _OnboardingPage(
-                            asset: 'assets/onboarding2.png',
+                            asset: Assets.onboarding2.path,
                             title: 'To-do Management',
                             description:
                                 'With the help of Reminders, it\'s impossible to forget your'
@@ -69,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 'Your todo list is also neatly organized based on sections'
                                 ' (date, project, etc) too.'),
                         _OnboardingPage(
-                            asset: 'assets/onboarding3.png',
+                            asset: Assets.onboarding3.path,
                             title: 'A ton of more helpers',
                             description:
                                 'It also support a wide range of features to help you manage your todo list easier, like:\n\n'
@@ -235,7 +237,7 @@ class _BottomButton extends StatelessWidget {
               style: Theme.of(context).textTheme.headline6!.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Bree',
+                    fontFamily: FontFamily.bree,
                   ),
             ),
           );

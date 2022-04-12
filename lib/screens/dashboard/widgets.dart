@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
+import '../../gen/assets.gen.dart';
 
 import 'dashboard_screen.dart';
 
@@ -39,11 +40,7 @@ class UserAvatar extends StatelessWidget {
                 color: Theme.of(context).primaryColor,
               ),
             ),
-            Image.asset(
-              'assets/user-avatar.png',
-              height: 32,
-              width: 32,
-            ),
+            Assets.userAvatar.image(height: 32, width: 32),
           ],
         ),
       ),
@@ -101,11 +98,7 @@ class _StatsBoardState extends State<StatsBoard> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Image.asset(
-                        'assets/dartboard.webp',
-                        height: 128,
-                        width: 128,
-                      ),
+                      child: Assets.dartboard.image(height: 128, width: 128),
                     ),
                   ],
                 )

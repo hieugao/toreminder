@@ -2,6 +2,7 @@
 .fvm/ 
 *.freezed.dart
 *.g.dart
+lib/gen/
 
 # Miscellaneous
 *.class
