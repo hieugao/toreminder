@@ -1,21 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-
 // import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:grouped_list/grouped_list.dart';
-// import 'package:responsive_framework/responsive_framework.dart';
 
 import '../../common/extensions.dart';
 import '../../features/todo/models.dart';
-import '../features/todo/providers.dart';
 
-final addTodoKey = UniqueKey();
-final addButtonKey = UniqueKey();
-final todayTodoCountKey = UniqueKey();
+import 'dashboard_screen.dart';
 
 const _kBottomBarHeight = 64.0;
 
@@ -26,224 +20,8 @@ _textEditingDecoration(String hint) => InputDecoration(
       border: InputBorder.none,
     );
 
-class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
-
-  @override
-  _DashboardScreenState createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerProviderStateMixin {
-  final _isCreatingTodo = false;
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    //   ..addListener(() {
-    //     setState(() {/* Reload `_TabBarItem` */});
-    //   });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final todayTodos = ref.watch(todayTodosFilteredProvider);
-    final weekTodos = ref.watch(weekTodosFilteredProvider);
-    final todos = ref.watch(todoListProvider);
-
-    final theme = Theme.of(context);
-    final height = MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'Hello, Rosie',
-          style: theme.textTheme.headline6!.copyWith(fontFamily: 'Bree'),
-        ),
-        actions: const [_UserAvatar()],
-      ),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: SizedBox(
-                height: height * 0.175,
-                child: _StatsBoard(
-                  completed: todayTodos.where((todo) => todo.done).length,
-                  total: todayTodos.length,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 40,
-                child: TabBar(
-                  isScrollable: true,
-                  controller: _tabController,
-                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
-                  indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: theme.primaryColor,
-                  ),
-                  tabs: [
-                    _TodoTabBarItem(
-                      icon: Icons.calendar_today,
-                      label: 'Today',
-                      isSelected: _tabController.index == 0,
-                    ),
-                    _TodoTabBarItem(
-                      icon: Icons.calendar_view_week,
-                      label: 'Next 7 days',
-                      isSelected: _tabController.index == 1,
-                    ),
-                    _TodoTabBarItem(
-                      icon: Icons.calendar_month,
-                      label: 'Incoming',
-                      isSelected: _tabController.index == 2,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                // TODO: Sort todos based on hour and minute.
-                child: TabBarView(controller: _tabController, children: <Widget>[
-                  todayTodos.isNotEmpty
-                      ? _TodoListView(
-                          todayTodos,
-                          onChanged: (index, value) => ref
-                              .read(todoListProvider.notifier)
-                              .updateAt(index, todos[index].copyWith(done: value)),
-                          onDeleted: (index) {
-                            ref.read(todoListProvider.notifier).removeAt(index);
-                            ScaffoldMessenger.of(context).showSnackBar(_removingSnackBar(
-                              context,
-                              () => ref.read(todoListProvider.notifier).undo(index),
-                            ));
-                          },
-                        )
-                      : const Center(child: Text('No todos for today')),
-                  weekTodos.isNotEmpty
-                      ? GroupedListView(
-                          elements: weekTodos,
-                          groupBy: (Todo todo) =>
-                              DateTime(todo.dueDate.year, todo.dueDate.month, todo.dueDate.day),
-                          groupSeparatorBuilder: (DateTime dt) => Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            child: Text(dt.toRelative()),
-                          ),
-                          indexedItemBuilder: (context, Todo todo, index) => Card(
-                            elevation: 4,
-                            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            child: _TodoListTile(
-                              todo,
-                              onChanged: (value) => ref
-                                  .read(todoListProvider.notifier)
-                                  .updateAt(index, todos[index].copyWith(done: value)),
-                              onDeleted: () => ref.read(todoListProvider.notifier).removeAt(index),
-                            ),
-                          ),
-                        )
-                      : const Center(child: Text('No todos for next 7 days')),
-                  const Center(
-                    child: Text("This is a future feature!"),
-                  )
-                ]),
-              ),
-            ),
-          ],
-        ),
-      ),
-      // TODO: Add Bottom Navigation Bar.
-      // bottomNavigationBar: null,
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: _isCreatingTodo
-          ? null
-          : FloatingActionButton(
-              child: Container(
-                height: 60,
-                width: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle, // circular shape
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    // stops: [0.1, 0.5],
-                    colors: [
-                      // Color(0xFF9400d3),
-                      // Color(0xFFff8b00),
-                      // Color.fromRGBO(251, 112, 71, 1),
-                      // Color.fromRGBO(255, 190, 32, 1),
-                      Theme.of(context).primaryColor,
-                      Colors.orange,
-                    ],
-                  ),
-                  // color: Theme.of(context).primaryColor,
-                ),
-                child: const Icon(FontAwesomeIcons.plus, size: 24, color: Colors.white70),
-              ),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  elevation: 16,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  builder: (context) => Container(
-                    height: MediaQuery.of(context).size.height * 0.65,
-                    // padding: const EdgeInsets.all(16),
-                    child: Consumer(builder: (context, ref, child) {
-                      return _CreateTodoMBS(
-                        onAdded: (todo) {
-                          ref.read(todoListProvider.notifier).add(todo);
-                          ScaffoldMessenger.of(context).showSnackBar(_addingSnackBar(context));
-                        },
-                      );
-                    }),
-                  ),
-                );
-              },
-            ),
-    );
-  }
-}
-
-// TODO: Desktop support.
-// class _SideMenu extends StatelessWidget {
-//   const _SideMenu({Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Drawer(
-//       backgroundColor: const Color(0xFF202427),
-//       child: ListView(
-//         children: const [
-//           _TodoTabBarItem(
-//             icon: Icons.calendar_today,
-//             label: 'Today',
-//             isSelected: true,
-//             // isSelected: _tabController.index == 0,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-class _UserAvatar extends StatelessWidget {
-  const _UserAvatar({Key? key}) : super(key: key);
+class UserAvatar extends StatelessWidget {
+  const UserAvatar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -273,32 +51,8 @@ class _UserAvatar extends StatelessWidget {
   }
 }
 
-// TODO: Horizontal Calendar.
-// CalendarTimeline(
-//   // initialDate: DateTime(2020, 4, 20),
-//   // firstDate: DateTime(2019, 1, 15),
-//   // lastDate: DateTime(2020, 11, 20),
-//   initialDate: _selectedDate!,
-//   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
-//   // lastDate: _selectedDate!.add(const Duration(days: 14)),
-//   firstDate: DateTime(2022, 02, 20),
-//   lastDate: DateTime(2022, 03, 20),
-//   onDateSelected: (date) => setState(() {
-//     _selectedDate = date;
-//   }),
-//   leftMargin: 0,
-//   monthColor: theme.disabledColor,
-//   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
-//   activeDayColor: theme.textTheme.bodyText1!.color,
-//   activeBackgroundDayColor: const Color(0xFF5d4efe),
-//   dotsColor: const Color(0xFF333A47),
-//   selectableDayPredicate: (date) => date.day != 23,
-//   locale: 'en_ISO',
-// ),
-// const SizedBox(height: 16),
-
-class _StatsBoard extends StatefulWidget {
-  const _StatsBoard({
+class StatsBoard extends StatefulWidget {
+  const StatsBoard({
     Key? key,
     required this.completed,
     required this.total,
@@ -308,10 +62,10 @@ class _StatsBoard extends StatefulWidget {
   final int total;
 
   @override
-  State<_StatsBoard> createState() => _StatsBoardState();
+  State<StatsBoard> createState() => _StatsBoardState();
 }
 
-class _StatsBoardState extends State<_StatsBoard> {
+class _StatsBoardState extends State<StatsBoard> {
   bool showLineChart = false;
 
   @override
@@ -391,6 +145,52 @@ class _StatsBoardState extends State<_StatsBoard> {
     );
   }
 }
+
+// TODO: Desktop support.
+// class _SideMenu extends StatelessWidget {
+//   const _SideMenu({Key? key}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Drawer(
+//       backgroundColor: const Color(0xFF202427),
+//       child: ListView(
+//         children: const [
+//           _TodoTabBarItem(
+//             icon: Icons.calendar_today,
+//             label: 'Today',
+//             isSelected: true,
+//             // isSelected: _tabController.index == 0,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+// TODO: Horizontal Calendar.
+// CalendarTimeline(
+//   // initialDate: DateTime(2020, 4, 20),
+//   // firstDate: DateTime(2019, 1, 15),
+//   // lastDate: DateTime(2020, 11, 20),
+//   initialDate: _selectedDate!,
+//   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
+//   // lastDate: _selectedDate!.add(const Duration(days: 14)),
+//   firstDate: DateTime(2022, 02, 20),
+//   lastDate: DateTime(2022, 03, 20),
+//   onDateSelected: (date) => setState(() {
+//     _selectedDate = date;
+//   }),
+//   leftMargin: 0,
+//   monthColor: theme.disabledColor,
+//   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
+//   activeDayColor: theme.textTheme.bodyText1!.color,
+//   activeBackgroundDayColor: const Color(0xFF5d4efe),
+//   dotsColor: const Color(0xFF333A47),
+//   selectableDayPredicate: (date) => date.day != 23,
+//   locale: 'en_ISO',
+// ),
+// const SizedBox(height: 16),
 
 // TODO: Add Weekly Statistics.
 // class _WeekLineChart extends StatelessWidget {
@@ -504,8 +304,8 @@ class _StatsBoardState extends State<_StatsBoard> {
 //   }
 // }
 
-class _TodoTabBarItem extends StatelessWidget {
-  const _TodoTabBarItem({
+class TodoTabBarItem extends StatelessWidget {
+  const TodoTabBarItem({
     Key? key,
     required this.icon,
     required this.label,
@@ -530,8 +330,8 @@ class _TodoTabBarItem extends StatelessWidget {
   }
 }
 
-class _TodoListView extends StatelessWidget {
-  const _TodoListView(
+class TodoListView extends StatelessWidget {
+  const TodoListView(
     this.todos, {
     Key? key,
     required this.onChanged,
@@ -551,7 +351,7 @@ class _TodoListView extends StatelessWidget {
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: _TodoListTile(
+          child: TodoListTile(
             todos[index],
             onChanged: (value) => onChanged(index, value),
             onDeleted: () => onDeleted(index),
@@ -563,8 +363,8 @@ class _TodoListView extends StatelessWidget {
 }
 
 // FIXME: Convert to StatelessWidget.
-class _TodoListTile extends StatefulWidget {
-  const _TodoListTile(
+class TodoListTile extends StatefulWidget {
+  const TodoListTile(
     this.todo, {
     Key? key,
     required this.onChanged,
@@ -576,10 +376,10 @@ class _TodoListTile extends StatefulWidget {
   final VoidCallback onDeleted;
 
   @override
-  __TodoListTileState createState() => __TodoListTileState();
+  _TodoListTileState createState() => _TodoListTileState();
 }
 
-class __TodoListTileState extends State<_TodoListTile> {
+class _TodoListTileState extends State<TodoListTile> {
   bool _isChecked = false;
 
   @override
@@ -589,7 +389,7 @@ class __TodoListTileState extends State<_TodoListTile> {
   }
 
   @override
-  void didUpdateWidget(_TodoListTile oldWidget) {
+  void didUpdateWidget(TodoListTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.todo != widget.todo) {
       _isChecked = widget.todo.done;
@@ -657,16 +457,16 @@ class __TodoListTileState extends State<_TodoListTile> {
   }
 }
 
-class _CreateTodoMBS extends StatefulWidget {
-  const _CreateTodoMBS({Key? key, required this.onAdded}) : super(key: key);
+class CreateTodoMBS extends StatefulWidget {
+  const CreateTodoMBS({Key? key, required this.onAdded}) : super(key: key);
 
   final Function(Todo) onAdded;
 
   @override
-  State<_CreateTodoMBS> createState() => _CreateTodoMBSState();
+  State<CreateTodoMBS> createState() => _CreateTodoMBSState();
 }
 
-class _CreateTodoMBSState extends State<_CreateTodoMBS> {
+class _CreateTodoMBSState extends State<CreateTodoMBS> {
   DateTimeRange dateRange = DateTimeRange(
     start: DateTime.now(),
     end: DateTime.now(),
@@ -842,7 +642,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
   }
 }
 
-_addingSnackBar(BuildContext context) => SnackBar(
+addingSnackBar(BuildContext context) => SnackBar(
       elevation: 12,
       // behavior: SnackBarBehavior.floating,
       // margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -869,7 +669,7 @@ _addingSnackBar(BuildContext context) => SnackBar(
       ),
     );
 
-_removingSnackBar(BuildContext context, VoidCallback onPressed) => SnackBar(
+removingSnackBar(BuildContext context, VoidCallback onPressed) => SnackBar(
       elevation: 12,
       // behavior: SnackBarBehavior.floating,
       // margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),

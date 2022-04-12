@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toreminder/app.dart';
 import 'package:toreminder/features/onboarding/providers.dart';
 import 'package:toreminder/features/todo/providers.dart';
-import 'package:toreminder/screens/dashboard_screen.dart';
+import 'package:toreminder/screens/dashboard/dashboard_screen.dart';
 
 import '../providers/todo_list_test.dart';
 

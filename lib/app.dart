@@ -7,7 +7,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import './common/constants.dart' show Routes;
 import './common/theme.dart';
 import 'features/onboarding/providers.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 class MyApp extends StatelessWidget {
