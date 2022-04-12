@@ -30,6 +30,8 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
 
   final TodoRepository _repo;
 
+  Todo? _deleted;
+
   List<Todo> get todos => state;
 
   Future<void> add(Todo todo) async {
@@ -38,16 +40,24 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
   }
 
   Future<void> updateAt(int index, Todo todo) async {
-    var newState = state;
+    var newState = state.toList();
     newState[index] = todo;
-    state = [...newState];
+    state = newState;
     await _repo.save(state);
   }
 
   Future<void> removeAt(int index) async {
-    var newState = state;
+    var newState = state.toList();
+    _deleted = newState[index];
     newState.removeAt(index);
-    state = [...newState];
+    state = newState;
+    await _repo.save(state);
+  }
+
+  Future<void> undo(int index) async {
+    var newState = state.toList();
+    newState.insert(index, _deleted!);
+    state = newState;
     await _repo.save(state);
   }
 

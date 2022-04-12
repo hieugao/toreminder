@@ -123,7 +123,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                           onChanged: (index, value) => ref
                               .read(todoListProvider.notifier)
                               .updateAt(index, todos[index].copyWith(done: value)),
-                          onDeleted: (index) => ref.read(todoListProvider.notifier).removeAt(index),
+                          onDeleted: (index) {
+                            ref.read(todoListProvider.notifier).removeAt(index);
+                            ScaffoldMessenger.of(context).showSnackBar(_removingSnackBar(
+                              context,
+                              () => ref.read(todoListProvider.notifier).undo(index),
+                            ));
+                          },
                         )
                       : const Center(child: Text('No todos for today')),
                   weekTodos.isNotEmpty
@@ -202,7 +208,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                       return _CreateTodoMBS(
                         onAdded: (todo) {
                           ref.read(todoListProvider.notifier).add(todo);
-                          ScaffoldMessenger.of(context).showSnackBar(_snackBar(context));
+                          ScaffoldMessenger.of(context).showSnackBar(_addingSnackBar(context));
                         },
                       );
                     }),
@@ -836,7 +842,7 @@ class _CreateTodoMBSState extends State<_CreateTodoMBS> {
   }
 }
 
-_snackBar(BuildContext context) => SnackBar(
+_addingSnackBar(BuildContext context) => SnackBar(
       elevation: 12,
       // behavior: SnackBarBehavior.floating,
       // margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -860,6 +866,38 @@ _snackBar(BuildContext context) => SnackBar(
             ),
           ],
         ),
+      ),
+    );
+
+_removingSnackBar(BuildContext context, VoidCallback onPressed) => SnackBar(
+      elevation: 12,
+      // behavior: SnackBarBehavior.floating,
+      // margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      backgroundColor: Colors.grey.shade700,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      content: Container(
+        padding: const EdgeInsets.only(left: 8),
+        // decoration: BoxDecoration(
+        //   color: Colors.grey.shade700,
+        //   borderRadius: BorderRadius.circular(8),
+        // ),
+        child: Row(
+          children: [
+            const Icon(Icons.delete_forever, color: Colors.red, size: 32),
+            const SizedBox(width: 8),
+            Text(
+              'Todo is removed!',
+              style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                    fontSize: 16,
+                  ),
+            ),
+          ],
+        ),
+      ),
+      action: SnackBarAction(
+        label: 'UNDO',
+        textColor: Colors.red,
+        onPressed: onPressed,
       ),
     );
 
