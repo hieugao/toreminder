@@ -6,9 +6,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:toreminder/app.dart';
+import 'package:toreminder/features/onboarding/providers.dart';
 import 'package:toreminder/features/todo/providers.dart';
-import 'package:toreminder/pages/dashboard_screen.dart';
-import 'package:toreminder/pages/onboarding/view_models.dart';
+import 'package:toreminder/screens/dashboard_screen.dart';
 
 import '../providers/todo_list_test.dart';
 
@@ -26,7 +26,7 @@ void main() {
   Widget createWidgetUnderTest() {
     return ProviderScope(
       overrides: [
-        onBoardingProvider.overrideWithValue(OnBoardingViewModel.create(true, MockSharedPrefs())),
+        onBoardingProvider.overrideWithValue(OnBoardingNotifier.create(true, MockSharedPrefs())),
         todoListProvider.overrideWithValue(TodoListNotifier.create(
           List.from(todos),
           mockTodoRepository,
@@ -60,8 +60,6 @@ void main() {
   });
 
   testWidgets('Add a todo', (tester) async {
-    final title = 'Release new version of Toreminder';
-
     arrangeTodoRepository();
 
     await tester.pumpWidget(createWidgetUnderTest());
@@ -70,12 +68,12 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pump();
 
-    await tester.enterText(addTodo, title);
+    await tester.enterText(addTodo, newTodo.title);
 
     expect(
       find.descendant(
         of: addTodo,
-        matching: find.text(title),
+        matching: find.text(newTodo.title),
       ),
       findsOneWidget,
     );

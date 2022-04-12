@@ -6,10 +6,9 @@ import 'package:responsive_framework/responsive_framework.dart';
 
 import './common/constants.dart' show Routes;
 import './common/theme.dart';
-import 'pages/create_note/create_note_page.dart';
-import 'pages/dashboard_screen.dart';
-import 'pages/onboarding/onboarding_screen.dart';
-import 'pages/onboarding/view_models.dart';
+import 'features/onboarding/providers.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -42,7 +41,6 @@ class MyApp extends StatelessWidget {
           routes: {
             Routes.home: (context) => const DashboardScreen(),
             Routes.onboarding: (context) => const OnboardingScreen(),
-            Routes.createNote: (context) => const CreateNotePage(),
           },
         );
       },

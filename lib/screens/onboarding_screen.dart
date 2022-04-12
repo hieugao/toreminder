@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../common/constants.dart';
-import 'view_models.dart';
+import '../common/constants.dart';
+import '../features/onboarding/providers.dart';
 
 // Ref: https://www.youtube.com/watch?v=8eRQyE2PN7w
 class OnboardingScreen extends StatefulWidget {
