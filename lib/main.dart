@@ -32,8 +32,8 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
-        noteServiceProvider.overrideWithValue(NoteService(sharedPreferences)),
-        notionDatabaseServiceProvider.overrideWithValue(NotionDatabaseService(sharedPreferences)),
+        // noteServiceProvider.overrideWithValue(NoteService(sharedPreferences)),
+        // notionDatabaseServiceProvider.overrideWithValue(NotionDatabaseService(sharedPreferences)),
         todoRepositoryProvider.overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
         onBoardingSharedPrefsProvider.overrideWithValue(sharedPreferences),
       ],
