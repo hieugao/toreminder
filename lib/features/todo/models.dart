@@ -19,14 +19,4 @@ class Todo with _$Todo {
       Todo(id: UniqueKey().toString(), title: title, content: content, dueDate: dueDate);
 
   factory Todo.fromJson(Map<String, dynamic> json) => _$TodoFromJson(json);
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'content': content,
-      'dueDate': dueDate.toIso8601String(),
-      'done': done.toString(),
-    };
-  }
 }

@@ -60,7 +60,7 @@ class TodoSqlRepository implements TodoRepository {
 
     await db.insert(
       tableName,
-      todo.toMap(),
+      todo.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
