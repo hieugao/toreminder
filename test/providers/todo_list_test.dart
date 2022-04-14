@@ -28,55 +28,67 @@ void main() {
     mockTodoRepository = MockTodoRepository();
   });
 
-  ProviderContainer overrideValue() => ProviderContainer(overrides: [
-        todoListProvider.overrideWithValue(TodoListNotifier.create(
-          List.from(todos),
-          mockTodoRepository,
-        )),
-      ]);
+  // final mockProvider = TodoListNotifier.provider(List.from(todos));
+
+  ProviderContainer overrideValue() => ProviderContainer(
+        overrides: [
+          todoListProvider.overrideWithValue(TodoListNotifier.create(
+            List.from(todos),
+            mockTodoRepository,
+          )),
+          // todoListProvider.overrideWithProvider(mockProvider),
+          // todoRepositoryProvider.overrideWithValue(mockTodoRepository),
+        ],
+      );
 
   void arrangeTodoRepository() {
     when(() => mockTodoRepository.save(any())).thenAnswer((_) async => Future.value());
   }
 
-  test('Defaults to "todos" and notify listeners when value changes', () {
-    final container = overrideValue();
-    addTearDown(container.dispose);
-    final listener = Listener();
+  group('Todo List Notifier', () {
+    test('- Defaults to "todos" and notify listeners when value changes', () {
+      final container = overrideValue();
+      addTearDown(container.dispose);
+      final listener = Listener();
 
-    // Observe a provider and spy the changes.
-    container.listen<List<Todo>>(todoListProvider, listener, fireImmediately: true);
+      // Observe a provider and spy the changes.
+      container.listen<List<Todo>>(todoListProvider, listener, fireImmediately: true);
 
-    // The listener is called immediately with `todos` (the default value).
-    verify(() => listener(null, todos)).called(1);
-    verifyNoMoreInteractions(listener);
+      // The listener is called immediately with `todos` (the default value).
+      verify(() => listener(null, todos)).called(1);
+      verifyNoMoreInteractions(listener);
 
-    // Add a todo.
-    arrangeTodoRepository();
-    container.read(todoListProvider.notifier).add(newTodo);
+      // Add a todo.
+      arrangeTodoRepository();
+      container.read(todoListProvider.notifier).add(newTodo);
 
-    // Check.
-    verify(() => listener(todos, [...todos, newTodo])).called(1);
-    verifyNoMoreInteractions(listener);
+      // Check.
+      verify(() => listener(todos, [newTodo, ...todos])).called(1);
+      verifyNoMoreInteractions(listener);
+    });
+
+    test('- Add', () {
+      final container = overrideValue();
+      arrangeTodoRepository();
+      container.read(todoListProvider.notifier).add(newTodo);
+      expect(container.read(todoListProvider).contains(newTodo), true);
+    });
+
+    test('- Update At', () {
+      final container = overrideValue();
+      arrangeTodoRepository();
+      container.read(todoListProvider.notifier).updateAt(0, newTodo);
+      expect(container.read(todoListProvider).elementAt(0) != todos[0], true);
+    });
+
+    test('- Remove At', () {
+      final container = overrideValue();
+      arrangeTodoRepository();
+      container.read(todoListProvider.notifier).removeAt(0);
+      expect(container.read(todoListProvider).contains(todos[0]), false);
+    });
   });
-  test('Add', () {
-    final container = overrideValue();
-    arrangeTodoRepository();
-    container.read(todoListProvider.notifier).add(newTodo);
-    expect(container.read(todoListProvider).contains(newTodo), true);
-  });
 
-  test('Update At', () {
-    final container = overrideValue();
-    arrangeTodoRepository();
-    container.read(todoListProvider.notifier).updateAt(0, newTodo);
-    expect(container.read(todoListProvider).elementAt(0) != todos[0], true);
-  });
-
-  test('Remove At', () {
-    final container = overrideValue();
-    arrangeTodoRepository();
-    container.read(todoListProvider.notifier).removeAt(0);
-    expect(container.read(todoListProvider).contains(todos[0]), false);
-  });
+  // TODO: Add tests for Todo Repository.
+  group('Todo Repository', () {});
 }
