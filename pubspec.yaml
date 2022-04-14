@@ -35,6 +35,9 @@ dependencies:
   shared_preferences: ^2.0.9
   sqflite: ^2.0.2
   # timeago: ^3.1.0
+  
+  # Widgets:
+  fluttertoast: ^8.0.9
 
 dev_dependencies:
   build_runner:

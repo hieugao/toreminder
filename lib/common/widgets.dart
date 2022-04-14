@@ -1,4 +1,4 @@
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 // import '../features/note/models.dart';
 
@@ -52,3 +52,67 @@
 //     );
 //   }
 // }
+
+class TestPage extends StatelessWidget {
+  const TestPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: Container(),
+      ),
+    );
+  }
+}
+
+class ToreminderToast extends StatelessWidget {
+  const ToreminderToast({
+    Key? key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    required this.color,
+  }) : super(key: key);
+
+  final Icon icon;
+  final String title;
+  final String? subtitle;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      child: ClipPath(
+        child: Container(
+          decoration: BoxDecoration(border: Border(left: BorderSide(color: color, width: 6))),
+          child: ListTile(
+            enabled: false,
+            dense: true,
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+              child: icon,
+            ),
+            title: Text(
+              title,
+              style: Theme.of(context).textTheme.bodyText1!.copyWith(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              subtitle ?? 'Ooops! Internet is disconnected',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText2!
+                  .copyWith(color: Colors.white.withOpacity(0.6)),
+            ),
+          ),
+        ),
+        clipper: ShapeBorderClipper(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+}

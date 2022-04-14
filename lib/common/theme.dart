@@ -30,6 +30,10 @@ final themeData = ThemeData(
     ),
   ),
 
+  iconTheme: const IconThemeData(
+    color: Colors.white,
+  ),
+
   colorScheme: const ColorScheme.dark(
     secondary: Color(0xFF9B60EC),
     // primary: Colors.orange[300],
