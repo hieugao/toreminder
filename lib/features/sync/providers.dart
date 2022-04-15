@@ -25,7 +25,7 @@ class SyncNotifier extends StateNotifier<AsyncValue<SyncStatus>> {
           return;
         }
 
-        state = const AsyncData(SyncStatus.syncing);
+        state = const AsyncLoading();
 
         try {
           Future.wait([
