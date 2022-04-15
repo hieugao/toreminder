@@ -19,15 +19,21 @@ class SyncNotifier extends StateNotifier<AsyncValue<SyncStatus>> {
       (prev, next) async {
         count++;
 
+        // Don't sync if it's initial load.
         if (count == 1) {
           state = const AsyncData(SyncStatus.synced);
           return;
         }
 
+        state = const AsyncData(SyncStatus.syncing);
+
         try {
-          await todoRepo.save(next);
-          await notionRepo.createNotionPage(next.first);
-          state = const AsyncData(SyncStatus.synced);
+          Future.wait([
+            todoRepo.save(next),
+            notionRepo.createNotionPage(next.first),
+          ]).then((_) {
+            state = const AsyncData(SyncStatus.synced);
+          });
         } catch (e) {
           state = AsyncError(e);
         }

@@ -186,7 +186,7 @@ class _ToreminderSync extends ConsumerWidget {
           right: 8,
           child: SyncIndicator(
             status: sync.when(
-              data: (_) => SyncStatus.synced,
+              data: (status) => status,
               loading: () => SyncStatus.syncing,
               error: (e, st) {
                 // FIXME: Log error.
