@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
@@ -5,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toreminder/common/constants.dart';
 
 // import 'features/note/services.dart';
 import 'features/todo/repository.dart';
@@ -29,17 +33,25 @@ Future<void> main() async {
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
   //     overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        // noteServiceProvider.overrideWithValue(NoteService(sharedPreferences)),
-        // notionDatabaseServiceProvider.overrideWithValue(NotionDatabaseService(sharedPreferences)),
-        todoRepositoryProvider.overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
-        onBoardingSharedPrefsProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: DevicePreview(
-        enabled: !kReleaseMode,
-        builder: (context) => const MyApp(),
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = Platform.environment[Secrets.sentryDsn];
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(
+      ProviderScope(
+        overrides: [
+          // noteServiceProvider.overrideWithValue(NoteService(sharedPreferences)),
+          // notionDatabaseServiceProvider.overrideWithValue(NotionDatabaseService(sharedPreferences)),
+          todoRepositoryProvider.overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
+          onBoardingSharedPrefsProvider.overrideWithValue(sharedPreferences),
+        ],
+        child: DevicePreview(
+          enabled: !kReleaseMode,
+          builder: (context) => const MyApp(),
+        ),
       ),
     ),
   );

@@ -23,7 +23,7 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 
 ## Features
 - [x] Undo
-- [x] Sync to Notion
+- [ ] Sync to Notion
   - [x] One way (Local to Notion)
   - [ ] Two way
 
@@ -35,8 +35,8 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 - [ ] Settings Page - time format, etc
 
 ### Confirm Releases
-- [ ] Priority level
-- [ ] Label
+- [ ] Priority levels
+- [ ] Labels
 
 ### Development
 - [ ] Responsive
@@ -44,7 +44,7 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 - [x] Add Unit and Widget tests
 - [x] Implement CI/CD via Github Actions
 - [ ] Refactoring
-- [ ] Handle rrors, log, report bugs
+- [x] Errors Handling with Sentry
 - [ ] Reducing app size
 - [ ] Performance improvements
 

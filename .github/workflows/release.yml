@@ -23,6 +23,8 @@ jobs:
           flutter packages pub get
           flutter packages pub run build_runner build --delete-conflicting-outputs
           flutter build apk --split-per-abi
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
       - name: Create Github Release
         uses: ncipollo/release-action@v1
