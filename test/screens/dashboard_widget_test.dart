@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:toreminder/app.dart';
+import 'package:toreminder/features/notion/providers/notion_providers.dart';
+import 'package:toreminder/features/notion/repositories/notion_repo.dart';
 import 'package:toreminder/features/onboarding/providers.dart';
 import 'package:toreminder/features/todo/providers.dart';
 import 'package:toreminder/screens/dashboard/dashboard_screen.dart';
@@ -18,9 +22,13 @@ void main() {
   final addTodo = find.byKey(addTodoKey);
 
   late MockTodoRepository mockTodoRepository;
+  late http.Client client;
+  late NotionRepository repo;
 
   setUp(() {
     mockTodoRepository = MockTodoRepository();
+    client = MockClient((request) async => http.Response('', 200));
+    repo = NotionRepository(client);
   });
 
   Widget createWidgetUnderTest() {
@@ -31,6 +39,8 @@ void main() {
           List.from(todos),
           mockTodoRepository,
         )),
+        todoRepositoryProvider.overrideWithValue(mockTodoRepository),
+        notionRepositoryProvider.overrideWithValue(repo),
       ],
       child: const MyApp(),
     );

@@ -21,7 +21,7 @@ class SyncNotifier extends StateNotifier<AsyncValue<SyncStatus>> {
 
         // Don't sync if it's initial load.
         if (count == 1) {
-          state = const AsyncData(SyncStatus.synced);
+          state = const AsyncLoading();
           return;
         }
 
