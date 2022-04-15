@@ -5,10 +5,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:toreminder/common/widgets.dart';
+import 'package:toreminder/screens/note/widgets.dart';
 // import 'package:responsive_framework/responsive_framework.dart';
 
 import '../../common/extensions.dart';
-import '../../features/notion/providers/sync_providers.dart';
+import '../../features/sync/providers.dart';
 import '../../features/notion/repositories/connectivity_repo.dart';
 import '../../features/todo/models.dart';
 import '../../features/todo/providers.dart';
@@ -85,7 +86,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
           'Hello, Rosie',
           style: theme.textTheme.headline6!.copyWith(fontFamily: FontFamily.bree),
         ),
-        actions: const [UserAvatar()],
+        actions: const [_ToreminderSync()],
       ),
       body: SafeArea(
         child: Column(
@@ -166,6 +167,36 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                 );
               },
             ),
+    );
+  }
+}
+
+class _ToreminderSync extends ConsumerWidget {
+  const _ToreminderSync({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sync = ref.watch(syncProvider);
+
+    return Stack(
+      children: [
+        const UserAvatar(),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: SyncIndicator(
+            status: sync.when(
+              data: (_) => SyncStatus.synced,
+              loading: () => SyncStatus.syncing,
+              error: (e, st) {
+                // FIXME: Log error.
+                print('From Sync: ${e.toString()}');
+                return SyncStatus.unsynced;
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

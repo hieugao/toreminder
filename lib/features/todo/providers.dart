@@ -24,7 +24,7 @@ final todoRepositoryProvider = Provider<TodoRepository>((ref) => throw Unimpleme
 
 class TodoListNotifier extends StateNotifier<List<Todo>> {
   TodoListNotifier(this._repo, [List<Todo>? todos]) : super(todos ?? []) {
-    if (todos != null) _load();
+    if (todos == null) _init();
   }
 
   TodoListNotifier.create(List<Todo> state, this._repo) : super(state);
@@ -33,7 +33,6 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
       (ref) => TodoListNotifier(ref.watch(todoRepositoryProvider), todos));
 
   final TodoRepository _repo;
-
   Todo? _deleted;
 
   List<Todo> get todos => state;
@@ -61,7 +60,7 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
     state = newState;
   }
 
-  Future<void> _load() async {
+  Future<void> _init() async {
     state = await _repo.todos();
   }
 }

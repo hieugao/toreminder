@@ -105,65 +105,6 @@
 // // enum SyncStatus { synced, syncing, unsynced }
 
 // // TODO: Add loading indicator (while stream is loading) not syncing.
-// class _SyncIndicator extends StatelessWidget {
-//   const _SyncIndicator(
-//     this.numberUnsyncedNote, {
-//     required this.status,
-//     Key? key,
-//     // this.connectivityStatus = ConnectivityStatus.disconnected,
-//     // this.isSyncing = false,
-//   }) : super(key: key);
-
-//   final int numberUnsyncedNote;
-//   // final ConnectivityStatus connectivityStatus;
-//   // FIXME: Do I really need it? I only need it to indicate the user that the app is offline.
-//   final SyncStatus status;
-//   // final bool isSyncing;
-
-//   bool get _isSynced =>
-//       status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-//       decoration: BoxDecoration(
-//         borderRadius: BorderRadius.circular(10),
-//         color: Colors.grey[700],
-//       ),
-//       child: Row(
-//         children: [
-//           _buildSyncDot(),
-//           const SizedBox(width: 6),
-//           Text(
-//               status.isSyncing
-//                   ? 'Syncing... ($numberUnsyncedNote)'
-//                   // : _isSynced
-//                   : numberUnsyncedNote == 0
-//                       ? 'Synced'
-//                       : 'Unsynced ($numberUnsyncedNote)',
-//               style: Theme.of(context).textTheme.caption),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildSyncDot() {
-//     return Container(
-//       width: 5,
-//       height: 5,
-//       decoration: BoxDecoration(
-//         color: status.isSyncing
-//             ? Colors.yellow
-//             // : _isSynced
-//             : numberUnsyncedNote == 0
-//                 ? Colors.green
-//                 : Colors.red,
-//         shape: BoxShape.circle,
-//       ),
-//     );
-//   }
-// }
 
 // class _NoteCard extends StatelessWidget {
 //   const _NoteCard({

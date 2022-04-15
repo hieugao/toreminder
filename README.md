@@ -23,6 +23,9 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 
 ## Features
 - [x] Undo
+- [x] Sync to Notion
+  - [x] One way (Local to Notion)
+  - [ ] Two way
 
 ## To-dos
 ### Next Big Releases
@@ -41,6 +44,7 @@ Creating New Todo          |  Next 7 Days To-dos       | Video Showcase
 - [x] Add Unit and Widget tests
 - [x] Implement CI/CD via Github Actions
 - [ ] Refactoring
+- [ ] Handle rrors, log, report bugs
 - [ ] Reducing app size
 - [ ] Performance improvements
 

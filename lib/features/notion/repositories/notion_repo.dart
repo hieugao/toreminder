@@ -12,7 +12,8 @@ class ToreminderErr implements Exception {
 
   final String term;
 
-  String errMsg() => 'Toreminder Error: $term';
+  @override
+  String toString() => 'Toreminder Error: $term';
 }
 
 class NotionRepository {
@@ -82,7 +83,7 @@ class NotionRepository {
       );
 
       if (response.statusCode != 200) {
-        throw ToreminderErr('Failed to create page!');
+        throw ToreminderErr('Failed to create page! - ${response.body}');
       }
     } on SocketException catch (e) {
       throw Exception('Socket Error: $e');
