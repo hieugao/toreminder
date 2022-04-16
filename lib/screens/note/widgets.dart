@@ -57,11 +57,7 @@ class SyncIndicator extends StatelessWidget {
         //     : numberUnsyncedNote == 0
         //         ? Colors.green
         //         : Colors.red,
-        color: status == SyncStatus.syncing
-            ? Colors.yellow
-            : status == SyncStatus.synced
-                ? Colors.green
-                : Colors.red,
+        color: _getColor(),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -72,5 +68,18 @@ class SyncIndicator extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getColor() {
+    switch (status) {
+      case SyncStatus.syncing:
+        return Colors.yellow;
+      case SyncStatus.synced:
+        return Colors.green;
+      case SyncStatus.unsynced:
+        return Colors.red;
+      case SyncStatus.offline:
+        return Colors.grey;
+    }
   }
 }

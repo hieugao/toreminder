@@ -3,46 +3,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../notion/providers/notion_providers.dart';
 import '../notion/repositories/connectivity_repo.dart';
 import '../todo/models.dart';
-import '../todo/providers.dart';
 
-final syncProvider = StateNotifierProvider<SyncNotifier, AsyncValue<SyncStatus>>((ref) {
-  return SyncNotifier(ref);
+enum Action { create }
+
+final syncStatusProvider = FutureProvider<SyncStatus>((ref) {
+  final sync = ref.watch(syncProvider);
+  final network = ref.watch(connectivityServiceProvider.future);
+
+  return sync.when(
+    data: (data) async {
+      if (await network == ConnectivityStatus.connected) {
+        return SyncStatus.synced;
+      } else {
+        return SyncStatus.offline;
+      }
+    },
+    loading: () => SyncStatus.syncing,
+    error: (e, st) => SyncStatus.unsynced,
+  );
 });
 
-class SyncNotifier extends StateNotifier<AsyncValue<SyncStatus>> {
-  SyncNotifier(this._ref) : super(const AsyncLoading()) {
-    final todoRepo = _ref.watch(todoRepositoryProvider);
-    final notionRepo = _ref.watch(notionRepositoryProvider);
+final syncProvider = StateNotifierProvider<NewSyncNotifier, AsyncValue<void>>((ref) {
+  return NewSyncNotifier(ref);
+});
 
-    _ref.listen<List<Todo>>(
-      todoListProvider,
-      (prev, next) async {
-        count++;
-
-        // Don't sync if it's initial load.
-        if (count == 1) {
-          state = const AsyncLoading();
-          return;
-        }
-
-        state = const AsyncLoading();
-
-        try {
-          Future.wait([
-            todoRepo.save(next),
-            notionRepo.createNotionPage(next.first),
-          ]).then((_) {
-            state = const AsyncData(SyncStatus.synced);
-          });
-        } catch (e) {
-          state = AsyncError(e);
-        }
-      },
-    );
-  }
+class NewSyncNotifier extends StateNotifier<AsyncValue<void>> {
+  NewSyncNotifier(this._ref) : super(const AsyncValue.data(null));
 
   final Ref _ref;
-  int count = 0;
+
+  late final notionRepo = _ref.watch(notionRepositoryProvider);
+
+  Future<void> sync(Todo todo, Action action) async {
+    try {
+      state = const AsyncValue.loading();
+      if (action == Action.create) {
+        await notionRepo.createNotionPage(todo);
+      }
+    } catch (e) {
+      state = AsyncValue.error(e);
+    } finally {
+      state = const AsyncValue.data(null);
+    }
+  }
 }
 
 // No need `autoDispose` because it will run the whole time.
@@ -65,5 +68,5 @@ enum SyncStatus {
   synced,
   syncing,
   unsynced,
-  // offline,
+  offline,
 }

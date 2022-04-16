@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:toreminder/features/notion/repositories/notion_repo.dart';
 
 import '../../../common/extensions.dart';
 import '../../../features/todo/models.dart';
 import '../../../features/todo/repository.dart';
-import '../notion/providers/notion_providers.dart';
+import '../sync/providers.dart';
+
+typedef TodoListNSP = StateNotifierProvider<TodoListNotifier, List<Todo>>;
 
 final todayTodosFilteredProvider = Provider<List<Todo>>((ref) {
   final todos = ref.watch(todoListProvider);
@@ -16,35 +17,40 @@ final weekTodosFilteredProvider = Provider<List<Todo>>((ref) {
   return todos.where((todo) => todo.dueDate.isThisWeek).toList();
 });
 
-final todoListProvider = StateNotifierProvider<TodoListNotifier, List<Todo>>((ref) {
-  return TodoListNotifier(ref.watch(todoRepositoryProvider));
-});
+final todoListProvider = TodoListNotifier.provider();
 
 final todoRepositoryProvider = Provider<TodoRepository>((ref) => throw UnimplementedError());
 
 class TodoListNotifier extends StateNotifier<List<Todo>> {
-  TodoListNotifier(this._repo, [List<Todo>? todos]) : super(todos ?? []) {
+  TodoListNotifier(this._reader, [List<Todo>? todos]) : super(todos ?? []) {
     if (todos == null) _init();
   }
 
-  TodoListNotifier.create(List<Todo> state, this._repo) : super(state);
+  // TodoListNotifier.create(List<Todo> state, this._repo) : super(state);
 
-  static provider(List<Todo>? todos) => StateNotifierProvider<TodoListNotifier, List<Todo>>(
-      (ref) => TodoListNotifier(ref.watch(todoRepositoryProvider), todos));
+  static TodoListNSP provider([List<Todo>? todos]) =>
+      TodoListNSP((ref) => TodoListNotifier(ref.read, todos));
 
-  final TodoRepository _repo;
+  final Reader _reader;
+
   Todo? _deleted;
 
   List<Todo> get todos => state;
 
+  late final _todoRepo = _reader(todoRepositoryProvider);
+  late final _syncNotifier = _reader(syncProvider.notifier);
+
   void add(Todo todo) {
     state = [todo, ...state];
+    _todoRepo.save(state);
+    _syncNotifier.sync(todo, Action.create);
   }
 
   void updateAt(int index, Todo todo) {
     var newState = state.toList();
     newState[index] = todo;
     state = newState;
+    _todoRepo.save(state);
   }
 
   void removeAt(int index) {
@@ -52,15 +58,17 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
     _deleted = newState[index];
     newState.removeAt(index);
     state = newState;
+    _todoRepo.save(state);
   }
 
   void undo(int index) {
     var newState = state.toList();
     newState.insert(index, _deleted!);
     state = newState;
+    _todoRepo.save(state);
   }
 
   Future<void> _init() async {
-    state = await _repo.todos();
+    state = await _todoRepo.todos();
   }
 }

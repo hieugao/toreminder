@@ -17,6 +17,8 @@ final todos = [
 
 final newTodo = Todo(id: '4', title: 'Clean living room', dueDate: DateTime.now());
 
+final mocktodoListProvider = TodoListNotifier.provider(List.from(todos));
+
 class Listener extends Mock {
   void call(List<Todo>? previous, List<Todo> value);
 }
@@ -28,16 +30,10 @@ void main() {
     mockTodoRepository = MockTodoRepository();
   });
 
-  // final mockProvider = TodoListNotifier.provider(List.from(todos));
-
   ProviderContainer overrideValue() => ProviderContainer(
         overrides: [
-          todoListProvider.overrideWithValue(TodoListNotifier.create(
-            List.from(todos),
-            mockTodoRepository,
-          )),
-          // todoListProvider.overrideWithProvider(mockProvider),
-          // todoRepositoryProvider.overrideWithValue(mockTodoRepository),
+          todoRepositoryProvider.overrideWithValue(mockTodoRepository),
+          todoListProvider.overrideWithProvider(mocktodoListProvider),
         ],
       );
 

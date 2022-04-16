@@ -35,10 +35,7 @@ void main() {
     return ProviderScope(
       overrides: [
         onBoardingProvider.overrideWithValue(OnBoardingNotifier.create(true, MockSharedPrefs())),
-        todoListProvider.overrideWithValue(TodoListNotifier.create(
-          List.from(todos),
-          mockTodoRepository,
-        )),
+        todoListProvider.overrideWithProvider(mocktodoListProvider),
         todoRepositoryProvider.overrideWithValue(mockTodoRepository),
         notionRepositoryProvider.overrideWithValue(repo),
       ],

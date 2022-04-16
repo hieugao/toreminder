@@ -176,7 +176,7 @@ class _ToreminderSync extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sync = ref.watch(syncProvider);
+    final syncStatus = ref.watch(syncStatusProvider);
 
     return Stack(
       children: [
@@ -185,7 +185,7 @@ class _ToreminderSync extends ConsumerWidget {
           top: 8,
           right: 8,
           child: SyncIndicator(
-            status: sync.when(
+            status: syncStatus.when(
               data: (status) => status,
               loading: () => SyncStatus.syncing,
               error: (e, st) {
