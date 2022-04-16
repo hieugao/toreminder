@@ -52,7 +52,7 @@ void main() {
     // when(() => repo.createNotionPage(newTodo)).thenAnswer((_) async {});
 
     expect(
-      () => container.read(notionRepositoryProvider).createNotionPage(newTodo),
+      () => container.read(notionRepositoryProvider).createPage(newTodo),
       throwsA(isA<ToreminderErr>()),
     );
   });

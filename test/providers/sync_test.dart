@@ -26,7 +26,10 @@ void main() {
 
   setUp(() {
     mockTodoRepo = MockTodoRepository();
-    client = MockClient((request) async => http.Response('', 200));
+    client = MockClient((request) async => http.Response(
+          '{"id": "e7f60d5b-9d47-4d9d-ba09-1c1bb173d75b"}',
+          200,
+        ));
     notionRepo = NotionRepository(client);
   });
 

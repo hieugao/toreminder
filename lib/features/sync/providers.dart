@@ -11,7 +11,7 @@ enum SyncStatus {
   offline,
 }
 
-enum Action { create }
+enum Action { create, archive }
 
 final syncStatusProvider = FutureProvider<SyncStatus>((ref) {
   final sync = ref.watch(syncProvider);
@@ -41,15 +41,21 @@ class SyncNotifier extends StateNotifier<AsyncValue<void>> {
 
   late final notionRepo = _ref.watch(notionRepositoryProvider);
 
-  Future<void> sync(Todo todo, Action action) async {
+  Future<String> sync(Todo todo, Action action) async {
     state = const AsyncValue.loading();
 
     try {
-      if (action == Action.create) {
-        await notionRepo.createNotionPage(todo);
+      switch (action) {
+        case Action.create:
+          final id = await notionRepo.createPage(todo);
+          return id;
+        case Action.archive:
+          await notionRepo.archivePage(todo);
+          return '';
       }
     } catch (e) {
       state = AsyncValue.error(e);
+      throw Exception(e);
     } finally {
       state = const AsyncValue.data(null);
     }

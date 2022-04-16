@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:riverpod/riverpod.dart';
@@ -42,6 +45,8 @@ void main() {
   }
 
   group('Todo List Notifier', () {
+    // dotenv.testLoad(fileInput: File('.env').readAsStringSync());
+
     test('- Defaults to "todos" and notify listeners when value changes', () {
       final container = overrideValue();
       addTearDown(container.dispose);

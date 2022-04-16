@@ -13,6 +13,8 @@ class Todo with _$Todo {
     @Default('') String content,
     required DateTime dueDate,
     @Default(false) bool done,
+    @Default(false) isSynced,
+    String? notionId,
   }) = _Todo;
 
   factory Todo.initial(String title, String content, DateTime dueDate) =>

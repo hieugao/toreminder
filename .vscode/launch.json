@@ -22,5 +22,11 @@
     //     "pro"
     //   ]
     // }
+    {
+      "name": "Run All Tests",
+      "type": "dart",
+      "request": "launch",
+      "program": "test/", // or test/foo for a subset of tests
+    }
   ]
 }

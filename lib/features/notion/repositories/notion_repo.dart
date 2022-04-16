@@ -68,7 +68,7 @@ class NotionRepository {
   //   return data;
   // }
 
-  Future<void> createNotionPage(Todo todo) async {
+  Future<String> createPage(Todo todo) async {
     const url = _baseUrl + _pagesPath;
 
     try {
@@ -79,11 +79,37 @@ class NotionRepository {
           'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
           HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
         },
-        body: json.encode(_payload(todo)),
+        body: json.encode(_creatingPayload(todo)),
       );
 
       if (response.statusCode != 200) {
         throw ToreminderErr('Failed to create page! - ${response.body}');
+      }
+
+      return json.decode(response.body)['id'];
+    } on SocketException catch (e) {
+      throw Exception('Socket Error: $e');
+    } on Error catch (e) {
+      throw Exception('General Error: $e');
+    }
+  }
+
+  Future<void> archivePage(Todo todo) async {
+    final url = _baseUrl + _pagesPath + '${todo.notionId}';
+
+    try {
+      final response = await _httpClient.patch(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Notion-Version': '${dotenv.env['NOTION_VERSION']}',
+          HttpHeaders.authorizationHeader: 'Bearer ${dotenv.env['TOKEN']}',
+        },
+        body: json.encode(_archivingPayload(todo)),
+      );
+
+      if (response.statusCode != 200) {
+        throw ToreminderErr('Failed to archive page! - ${response.body}');
       }
     } on SocketException catch (e) {
       throw Exception('Socket Error: $e');
@@ -92,7 +118,7 @@ class NotionRepository {
     }
   }
 
-  static Map<String, dynamic> _payload(Todo todo) {
+  static Map<String, dynamic> _creatingPayload(Todo todo) {
     return {
       'parent': {
         'database_id': dotenv.env['DB_ID'],
@@ -147,6 +173,12 @@ class NotionRepository {
       //       }
       //     }
       //   ],
+    };
+  }
+
+  static Map<String, dynamic> _archivingPayload(Todo todo) {
+    return {
+      'archived': true,
     };
   }
 }

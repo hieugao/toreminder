@@ -42,8 +42,14 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
 
   Future<void> add(Todo todo) async {
     state = [todo, ...state];
-    _todoRepo.save(state);
-    await _syncNotifier.sync(todo, Action.create);
+    try {
+      final id = await _syncNotifier.sync(todo, Action.create);
+      todo = todo.copyWith(notionId: id, isSynced: true);
+    } catch (e) {
+      print(e);
+    } finally {
+      updateAt(0, todo);
+    }
   }
 
   void updateAt(int index, Todo todo) {
@@ -53,12 +59,19 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
     _todoRepo.save(state);
   }
 
-  void removeAt(int index) {
+  Future<void> removeAt(int index) async {
     var newState = state.toList();
     _deleted = newState[index];
     newState.removeAt(index);
     state = newState;
-    _todoRepo.save(state);
+
+    try {
+      await _syncNotifier.sync(_deleted!, Action.archive);
+    } catch (e) {
+      print(e);
+    } finally {
+      _todoRepo.save(state);
+    }
   }
 
   void undo(int index) {

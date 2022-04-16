@@ -120,6 +120,7 @@ void main() {
     await tester.tap(secondDeleteButton);
     await tester.pump();
 
+    expect(find.text(todos[1].title), findsNothing);
     expect(find.text('0/2 todos'), findsOneWidget);
 
     // await expectLater(find.byType(MyApp), matchesGoldenFile('remove_todo.png'));
