@@ -40,10 +40,10 @@ class TodoListNotifier extends StateNotifier<List<Todo>> {
   late final _todoRepo = _reader(todoRepositoryProvider);
   late final _syncNotifier = _reader(syncProvider.notifier);
 
-  void add(Todo todo) {
+  Future<void> add(Todo todo) async {
     state = [todo, ...state];
     _todoRepo.save(state);
-    _syncNotifier.sync(todo, Action.create);
+    await _syncNotifier.sync(todo, Action.create);
   }
 
   void updateAt(int index, Todo todo) {

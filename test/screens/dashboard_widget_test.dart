@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:http/http.dart' as http;
@@ -93,6 +94,35 @@ void main() {
     expect(find.text('0/4 todos'), findsOneWidget);
 
     // await expectLater(find.byType(MyApp), matchesGoldenFile('new_todo.png'));
+  });
+
+  testWidgets('Remove a todo', (tester) async {
+    arrangeTodoRepository();
+
+    final secondSlidable = find.ancestor(
+      of: find.text(todos[1].title),
+      matching: find.byType(Slidable),
+    );
+
+    final secondDeleteButton = find.descendant(
+      of: secondSlidable,
+      matching: find.byIcon(Icons.delete_forever),
+    );
+
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pump();
+
+    await tester.drag(secondSlidable, const Offset(-128, 0));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(secondDeleteButton);
+    await tester.pumpAndSettle();
+    await tester.tap(secondDeleteButton);
+    await tester.pump();
+
+    expect(find.text('0/2 todos'), findsOneWidget);
+
+    // await expectLater(find.byType(MyApp), matchesGoldenFile('remove_todo.png'));
   });
 
   // TODO: Todo Checkbox.

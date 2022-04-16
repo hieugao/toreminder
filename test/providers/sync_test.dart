@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:http/http.dart' as http;
@@ -13,46 +16,55 @@ import 'package:toreminder/features/todo/providers.dart';
 import 'todo_list_test.dart';
 
 class Listener extends Mock {
-  void call(AsyncValue<SyncStatus>? previous, AsyncValue<SyncStatus> value);
+  void call(AsyncValue<void>? previous, AsyncValue<void> value);
 }
 
 void main() {
-  late MockTodoRepository mockTodoRepository;
+  late MockTodoRepository mockTodoRepo;
   late http.Client client;
-  late NotionRepository repo;
+  late NotionRepository notionRepo;
 
   setUp(() {
-    mockTodoRepository = MockTodoRepository();
+    mockTodoRepo = MockTodoRepository();
     client = MockClient((request) async => http.Response('', 200));
-    repo = NotionRepository(client);
+    notionRepo = NotionRepository(client);
   });
 
   ProviderContainer overrideValue() => ProviderContainer(overrides: [
-        todoRepositoryProvider.overrideWithValue(mockTodoRepository),
-        notionRepositoryProvider.overrideWithValue(repo),
+        todoRepositoryProvider.overrideWithValue(mockTodoRepo),
+        notionRepositoryProvider.overrideWithValue(notionRepo),
         todoListProvider.overrideWithProvider(mocktodoListProvider),
       ]);
 
   void arrangeTodoRepository() {
-    when(() => mockTodoRepository.save(any())).thenAnswer((_) async => Future.value());
+    when(() => mockTodoRepo.save(any())).thenAnswer((_) async => Future.value());
   }
 
-  test('Defaults to loading and notify listeners when value changes', () {
-    // final container = overrideValue();
-    // addTearDown(container.dispose);
-    // final listener = Listener();
+  test('Defaults to loading and notify listeners when value changes', () async {
+    dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-    // container.listen<AsyncValue<SyncStatus>>(syncProvider, listener, fireImmediately: true);
+    final container = overrideValue();
+    addTearDown(container.dispose);
+    final listener = Listener();
 
-    // verify(() => listener(null, const AsyncLoading())).called(1);
-    // verifyNoMoreInteractions(listener);
+    container.listen<AsyncValue<void>>(syncProvider, listener, fireImmediately: true);
 
-    // expect(container.read(todoListProvider).length, todos.length);
+    verify(() => listener(null, const AsyncValue.data(null))).called(1);
+    verifyNoMoreInteractions(listener);
 
-    // // Sync a new todo.
-    // arrangeTodoRepository();
-    // container.read(todoListProvider.notifier).add(newTodo);
-    // verify(() => listener(const AsyncLoading(), const AsyncData(SyncStatus.synced))).called(1);
-    // verifyNoMoreInteractions(listener);
+    expect(container.read(todoListProvider).length, todos.length);
+
+    // Sync a new todo:
+    arrangeTodoRepository();
+
+    // Loading state.
+    final future = container.read(todoListProvider.notifier).add(newTodo);
+    verify(() => listener(const AsyncValue.data(null), const AsyncLoading())).called(1);
+    verifyNoMoreInteractions(listener);
+
+    // Success state.
+    await future;
+    verify(() => listener(const AsyncLoading(), const AsyncValue.data(null))).called(1);
+    verifyNoMoreInteractions(listener);
   });
 }

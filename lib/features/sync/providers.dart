@@ -4,6 +4,13 @@ import '../notion/providers/notion_providers.dart';
 import '../notion/repositories/connectivity_repo.dart';
 import '../todo/models.dart';
 
+enum SyncStatus {
+  synced,
+  syncing,
+  unsynced,
+  offline,
+}
+
 enum Action { create }
 
 final syncStatusProvider = FutureProvider<SyncStatus>((ref) {
@@ -23,20 +30,21 @@ final syncStatusProvider = FutureProvider<SyncStatus>((ref) {
   );
 });
 
-final syncProvider = StateNotifierProvider<NewSyncNotifier, AsyncValue<void>>((ref) {
-  return NewSyncNotifier(ref);
+final syncProvider = StateNotifierProvider<SyncNotifier, AsyncValue<void>>((ref) {
+  return SyncNotifier(ref);
 });
 
-class NewSyncNotifier extends StateNotifier<AsyncValue<void>> {
-  NewSyncNotifier(this._ref) : super(const AsyncValue.data(null));
+class SyncNotifier extends StateNotifier<AsyncValue<void>> {
+  SyncNotifier(this._ref) : super(const AsyncValue.data(null));
 
   final Ref _ref;
 
   late final notionRepo = _ref.watch(notionRepositoryProvider);
 
   Future<void> sync(Todo todo, Action action) async {
+    state = const AsyncValue.loading();
+
     try {
-      state = const AsyncValue.loading();
       if (action == Action.create) {
         await notionRepo.createNotionPage(todo);
       }
@@ -63,10 +71,3 @@ final connectivityServiceProvider = StreamProvider<ConnectivityStatus>((ref) {
 //   final SyncStatus status;
 //   final ConnectivityStatus connectivity;
 // }
-
-enum SyncStatus {
-  synced,
-  syncing,
-  unsynced,
-  offline,
-}
