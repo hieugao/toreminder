@@ -1,6 +1,6 @@
 ![logo-text](assets/logo-text.png)
 
-![](https://camo.githubusercontent.com/88bd58e13a123fda908ab14170a14e28ec30a36d28818be1e4d4fb437f4fca1b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4d61696e7461696e65642d7965732d677265656e2e737667) [![Analyze & Test](https://github.com/hieugao/toreminder/actions/workflows/test.yaml/badge.svg)](https://github.com/hieugao/toreminder/actions/workflows/test.yaml) [![codecov](https://codecov.io/gh/hieugao/toreminder/branch/main/graph/badge.svg?token=8V1XDA4TB8)](https://codecov.io/gh/hieugao/toreminder)
+![](https://camo.githubusercontent.com/88bd58e13a123fda908ab14170a14e28ec30a36d28818be1e4d4fb437f4fca1b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4d61696e7461696e65642d7965732d677265656e2e737667) [![CI](https://github.com/hieugao/toreminder/workflows/CI/badge.svg)](https://github.com/hieugao/toreminder/actions/workflows/test.yaml) [![codecov](https://codecov.io/gh/hieugao/toreminder/branch/main/graph/badge.svg?token=8V1XDA4TB8)](https://codecov.io/gh/hieugao/toreminder)
 
 <img align="right" src="assets/slogan.png" />
 
