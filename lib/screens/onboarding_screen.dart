@@ -18,10 +18,43 @@ class OnboardingScreen extends StatefulWidget {
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
 
+class _OnboardingModel {
+  _OnboardingModel(this.asset, this.title, [this.subtitle]);
+
+  final String asset;
+  final String title;
+  final String? subtitle;
+}
+
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final int _numPages = 3;
   int _current = 0;
   final PageController _pageController = PageController(initialPage: 0);
+
+  final List<_OnboardingModel> _models = [
+    _OnboardingModel(
+      Assets.onboarding1.path,
+      'Oh, Hi there!\nWelcome to Toreminder.',
+      'One quick question, have you ever forgotten something important'
+          ' at the end of the day? If the answer is yes, then congrats,'
+          ' you came to the right place.',
+    ),
+    _OnboardingModel(
+        Assets.onboarding2.path,
+        'To-do Management',
+        'With the help of Reminders, it\'s impossible to forget your'
+            ' important todo when the day pass.\n\n'
+            'Your todo list is also neatly organized based on sections'
+            ' (date, project, etc) too.'),
+    _OnboardingModel(
+        Assets.onboarding3.path,
+        'A ton of more helpers',
+        'It also support a wide range of features to help you manage your todo list easier, like:\n\n'
+            ' • Recurring Due Dates\n'
+            ' • Priority Levels\n'
+            ' • Labels\n'
+            ' • Etc'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -52,34 +85,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       physics: const ClampingScrollPhysics(),
                       controller: _pageController,
                       onPageChanged: (int page) => setState(() => _current = page),
-                      children: [
-                        // TODO: Create a data model for these pages.
-                        _OnboardingPage(
-                          asset: Assets.onboarding1.path,
-                          title: 'Oh, Hi there!\nWelcome to Toreminder.',
-                          description:
-                              'One quick question, have you ever forgotten something important'
-                              ' at the end of the day? If the answer is yes, then congrats,'
-                              ' you came to the right place.',
-                        ),
-                        _OnboardingPage(
-                            asset: Assets.onboarding2.path,
-                            title: 'To-do Management',
-                            description:
-                                'With the help of Reminders, it\'s impossible to forget your'
-                                ' important todo when the day pass.\n\n'
-                                'Your todo list is also neatly organized based on sections'
-                                ' (date, project, etc) too.'),
-                        _OnboardingPage(
-                            asset: Assets.onboarding3.path,
-                            title: 'A ton of more helpers',
-                            description:
-                                'It also support a wide range of features to help you manage your todo list easier, like:\n\n'
-                                ' • Recurring Due Dates\n'
-                                ' • Priority Levels\n'
-                                ' • Labels\n'
-                                ' • Etc'),
-                      ],
+                      children: List.generate(3, (index) => _OnboardingPage(_models[index])),
                     ),
                   ),
                   Padding(
@@ -120,16 +126,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _OnboardingPage extends StatelessWidget {
-  const _OnboardingPage({
+  const _OnboardingPage(
+    this.model, {
     Key? key,
-    required this.asset,
-    required this.title,
-    this.description,
   }) : super(key: key);
 
-  final String asset;
-  final String title;
-  final String? description;
+  final _OnboardingModel model;
 
   @override
   Widget build(BuildContext context) {
@@ -144,22 +146,21 @@ class _OnboardingPage extends StatelessWidget {
           SizedBox(
             height: height * 0.5,
             child: Image(
-              image: AssetImage(asset),
+              image: AssetImage(model.asset),
             ),
           ),
           Text(
-            title,
+            model.title,
             style: Theme.of(context)
                 .textTheme
                 .headline6!
                 .copyWith(fontWeight: FontWeight.bold, fontFamily: 'Bree'),
           ),
-          // description != null ? const SizedBox(height: 8) : const SizedBox(),
-          description != null
+          model.subtitle != null
               ? Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    description!,
+                    model.subtitle!,
                     style: Theme.of(context).textTheme.subtitle2!.copyWith(
                           color: Theme.of(context).textTheme.subtitle2!.color!.withOpacity(0.8),
                           fontSize: 13,
@@ -189,8 +190,6 @@ class _BottomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
     return isNext
         ? Row(
             mainAxisSize: MainAxisSize.max,
@@ -226,7 +225,7 @@ class _BottomButton extends StatelessWidget {
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               // backgroundColor: isNext ? Colors.white : Colors.transparent,
-              minimumSize: Size.fromHeight(56),
+              minimumSize: const Size.fromHeight(56),
               // padding: const EdgeInsets.symmetric(horizontal: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
