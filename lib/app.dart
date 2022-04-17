@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
             return DevicePreview.appBuilder(context, responsive);
           },
           debugShowCheckedModeBanner: false,
-          title: 'Notion Capture',
+          title: 'Toreminder',
           theme: themeData,
           initialRoute: isOnBoarded ? Routes.home : Routes.onboarding,
           routes: {
