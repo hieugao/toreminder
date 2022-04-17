@@ -47,7 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   SizedBox(
-                    height: height * 0.8,
+                    height: height * 0.85,
                     child: PageView(
                       physics: const ClampingScrollPhysics(),
                       controller: _pageController,

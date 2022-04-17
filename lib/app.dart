@@ -11,7 +11,9 @@ import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key, this.navigatorObservers}) : super(key: key);
+
+  final List<NavigatorObserver>? navigatorObservers;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +44,7 @@ class MyApp extends StatelessWidget {
             Routes.home: (context) => const DashboardScreen(),
             Routes.onboarding: (context) => const OnboardingScreen(),
           },
+          navigatorObservers: navigatorObservers ?? [],
         );
       },
     );
