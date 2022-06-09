@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1035088437801",
+    "project_id": "toreminder-28207",
+    "storage_bucket": "toreminder-28207.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1035088437801:android:7486a791c433e060c7b238",
+        "android_client_info": {
+          "package_name": "com.example.toreminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1035088437801-luec4c1lj1en6mfqtg5k9g3v4gev0fhb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6_ivG4GCFOWMokcI0eC3i9OIB0pxHMrM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1035088437801-luec4c1lj1en6mfqtg5k9g3v4gev0fhb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
