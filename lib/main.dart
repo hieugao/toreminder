@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // import 'common/constants.dart';
 // import 'common/utils.dart';
-import 'features/todo/repository.dart';
+import 'features/local_storage/repository.dart';
 import 'features/onboarding/providers.dart';
 import 'features/todo/providers.dart';
 import 'app.dart';
@@ -60,8 +60,8 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
-        todoRepositoryProvider.overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
         onBoardingSharedPrefsProvider.overrideWithValue(sharedPreferences),
+        todoRepositoryProvider.overrideWithValue(TodoSharedPrefsRepository(sharedPreferences)),
       ],
       child: const MyApp(),
     ),
