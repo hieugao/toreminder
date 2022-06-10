@@ -19,7 +19,8 @@ final weekTodosFilteredProvider = Provider<List<Todo>>((ref) {
 
 final todoListProvider = TodoListNotifier.provider();
 
-final todoRepositoryProvider = Provider<TodoRepository>((ref) => throw UnimplementedError());
+final todoRepositoryProvider =
+    Provider<TodoSharedPrefsRepository>((ref) => throw UnimplementedError());
 
 class TodoListNotifier extends StateNotifier<List<Todo>> {
   TodoListNotifier(this._reader, [List<Todo>? todos]) : super(todos ?? []) {

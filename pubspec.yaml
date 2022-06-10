@@ -32,9 +32,9 @@ dependencies:
   # lottie: ^1.2.1
   # metadata_fetch: ^0.4.1
   responsive_framework: ^0.1.7
+  
+  # Local Storage:
   shared_preferences: ^2.0.9
-  sqflite: ^2.0.2
-  # timeago: ^3.1.0
 
   # Errors Handling:
   sentry_flutter: ^6.4.0
