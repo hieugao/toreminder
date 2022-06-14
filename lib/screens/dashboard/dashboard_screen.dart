@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:toreminder/common/widgets.dart';
-import 'package:toreminder/screens/note/widgets.dart';
+import 'package:toreminder/widgets.dart';
 // import 'package:responsive_framework/responsive_framework.dart';
 
 import '../../common/extensions.dart';

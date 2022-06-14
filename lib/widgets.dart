@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../features/sync/providers.dart';
+import 'features/sync/providers.dart';
 
 class SyncIndicator extends StatelessWidget {
   const SyncIndicator(
