@@ -5,16 +5,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:toreminder/common/widgets.dart';
-import 'package:toreminder/widgets.dart';
 // import 'package:responsive_framework/responsive_framework.dart';
 
 import '../../common/extensions.dart';
-import '../../features/sync/providers.dart';
 import '../../features/notion/repositories/connectivity_repo.dart';
 import '../../features/todo/models.dart';
-import '../../features/todo/providers.dart';
 import '../../gen/fonts.gen.dart';
 
+import 'providers.dart';
 import 'widgets.dart';
 
 final addTodoKey = UniqueKey();
@@ -158,7 +156,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerPr
                     child: Consumer(builder: (context, ref, child) {
                       return CreateTodoMBS(
                         onAdded: (todo) {
-                          ref.read(todoListProvider.notifier).add(todo);
+                          ref.read(todosProvider.notifier).add(todo);
                           ScaffoldMessenger.of(context).showSnackBar(addingSnackBar(context));
                         },
                       );
@@ -206,7 +204,7 @@ class _TodayStats extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todayTodos = ref.watch(todayTodosFilteredProvider);
+    final todayTodos = ref.watch(filteredTodosProvider(FilterType.today));
     return StatsBoard(
       completed: todayTodos.where((todo) => todo.done).length,
       total: todayTodos.length,
@@ -257,9 +255,10 @@ class _TodoTabBarView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todayTodos = ref.watch(todayTodosFilteredProvider);
-    final weekTodos = ref.watch(weekTodosFilteredProvider);
-    final todos = ref.watch(todoListProvider);
+    // final todayTodos = ref.watch(todayTodosFilteredProvider);
+    final todayTodos = ref.watch(filteredTodosProvider(FilterType.today));
+    final weekTodos = ref.watch(filteredTodosProvider(FilterType.week));
+    final todos = ref.watch(todosProvider);
 
     return TabBarView(
       controller: controller,
@@ -268,13 +267,13 @@ class _TodoTabBarView extends ConsumerWidget {
             ? TodoListView(
                 todayTodos,
                 onChanged: (index, value) => ref
-                    .read(todoListProvider.notifier)
+                    .read(todosProvider.notifier)
                     .updateAt(index, todos[index].copyWith(done: value)),
                 onDeleted: (index) {
-                  ref.read(todoListProvider.notifier).removeAt(index);
+                  ref.read(todosProvider.notifier).removeAt(index);
                   ScaffoldMessenger.of(context).showSnackBar(removingSnackBar(
                     context,
-                    () => ref.read(todoListProvider.notifier).undo(index),
+                    () => ref.read(todosProvider.notifier).undo(index),
                   ));
                 },
               )
@@ -296,9 +295,9 @@ class _TodoTabBarView extends ConsumerWidget {
                   child: TodoListTile(
                     todo,
                     onChanged: (value) => ref
-                        .read(todoListProvider.notifier)
+                        .read(todosProvider.notifier)
                         .updateAt(index, todos[index].copyWith(done: value)),
-                    onDeleted: () => ref.read(todoListProvider.notifier).removeAt(index),
+                    onDeleted: () => ref.read(todosProvider.notifier).removeAt(index),
                   ),
                 ),
               )

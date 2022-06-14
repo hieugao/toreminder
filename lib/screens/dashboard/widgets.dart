@@ -1,9 +1,9 @@
 import 'dart:async';
 
-// import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 
+// import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../common/extensions.dart';
@@ -11,6 +11,7 @@ import '../../features/todo/models.dart';
 import '../../gen/assets.gen.dart';
 
 import 'dashboard_screen.dart';
+import 'providers.dart';
 
 const _kBottomBarHeight = 64.0;
 
@@ -138,164 +139,6 @@ class _StatsBoardState extends State<StatsBoard> {
     );
   }
 }
-
-// TODO: Desktop support.
-// class _SideMenu extends StatelessWidget {
-//   const _SideMenu({Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Drawer(
-//       backgroundColor: const Color(0xFF202427),
-//       child: ListView(
-//         children: const [
-//           _TodoTabBarItem(
-//             icon: Icons.calendar_today,
-//             label: 'Today',
-//             isSelected: true,
-//             // isSelected: _tabController.index == 0,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// TODO: Horizontal Calendar.
-// CalendarTimeline(
-//   // initialDate: DateTime(2020, 4, 20),
-//   // firstDate: DateTime(2019, 1, 15),
-//   // lastDate: DateTime(2020, 11, 20),
-//   initialDate: _selectedDate!,
-//   // firstDate: _selectedDate!.subtract(const Duration(days: 14)),
-//   // lastDate: _selectedDate!.add(const Duration(days: 14)),
-//   firstDate: DateTime(2022, 02, 20),
-//   lastDate: DateTime(2022, 03, 20),
-//   onDateSelected: (date) => setState(() {
-//     _selectedDate = date;
-//   }),
-//   leftMargin: 0,
-//   monthColor: theme.disabledColor,
-//   dayColor: theme.textTheme.bodyText1!.color!.withOpacity(0.6),
-//   activeDayColor: theme.textTheme.bodyText1!.color,
-//   activeBackgroundDayColor: const Color(0xFF5d4efe),
-//   dotsColor: const Color(0xFF333A47),
-//   selectableDayPredicate: (date) => date.day != 23,
-//   locale: 'en_ISO',
-// ),
-// const SizedBox(height: 16),
-
-// TODO: Add Weekly Statistics.
-// class _WeekLineChart extends StatelessWidget {
-//   const _WeekLineChart({Key? key}) : super(key: key);
-
-//   static const List<Color> gradientColors = [
-//     Color(0xff23b6e6),
-//     Color(0xff02d39a),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return LineChart(
-//       LineChartData(
-//         gridData: FlGridData(
-//           show: true,
-//           drawVerticalLine: true,
-//           horizontalInterval: 1,
-//           verticalInterval: 1,
-//           getDrawingHorizontalLine: (value) {
-//             return FlLine(
-//               color: const Color(0xff37434d),
-//               strokeWidth: 1,
-//             );
-//           },
-//           getDrawingVerticalLine: (value) {
-//             return FlLine(
-//               color: const Color(0xff37434d),
-//               strokeWidth: 1,
-//             );
-//           },
-//         ),
-//         titlesData: FlTitlesData(
-//           show: true,
-//           rightTitles: SideTitles(showTitles: false),
-//           topTitles: SideTitles(showTitles: false),
-//           bottomTitles: SideTitles(
-//             showTitles: true,
-//             reservedSize: 22,
-//             interval: 1,
-//             getTextStyles: (context, value) => const TextStyle(
-//                 color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
-//             getTitles: (value) {
-//               switch (value.toInt()) {
-//                 case 2:
-//                   return 'MAR';
-//                 case 5:
-//                   return 'JUN';
-//                 case 8:
-//                   return 'SEP';
-//               }
-//               return '';
-//             },
-//             margin: 8,
-//           ),
-//           leftTitles: SideTitles(
-//             showTitles: true,
-//             interval: 1,
-//             getTextStyles: (context, value) => const TextStyle(
-//               color: Color(0xff67727d),
-//               fontWeight: FontWeight.bold,
-//               fontSize: 15,
-//             ),
-//             getTitles: (value) {
-//               switch (value.toInt()) {
-//                 case 1:
-//                   return '10k';
-//                 case 3:
-//                   return '30k';
-//                 case 5:
-//                   return '50k';
-//               }
-//               return '';
-//             },
-//             reservedSize: 32,
-//             margin: 12,
-//           ),
-//         ),
-//         borderData:
-//             FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
-//         minX: 0,
-//         maxX: 11,
-//         minY: 0,
-//         maxY: 6,
-//         lineBarsData: [
-//           LineChartBarData(
-//             spots: const [
-//               FlSpot(0, 3),
-//               FlSpot(2.6, 2),
-//               FlSpot(4.9, 5),
-//               FlSpot(6.8, 3.1),
-//               FlSpot(8, 4),
-//               FlSpot(9.5, 3),
-//               FlSpot(11, 4),
-//             ],
-//             isCurved: true,
-//             colors: gradientColors,
-//             barWidth: 5,
-//             isStrokeCapRound: true,
-//             dotData: FlDotData(
-//               show: false,
-//             ),
-//             belowBarData: BarAreaData(
-//               show: true,
-//               colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 class TodoTabBarItem extends StatelessWidget {
   const TodoTabBarItem({
@@ -740,3 +583,85 @@ removingSnackBar(BuildContext context, VoidCallback onPressed) => SnackBar(
 //     ),
 //   ),
 // ),
+
+class SyncIndicator extends StatelessWidget {
+  const SyncIndicator(
+      // this.numberUnsyncedNote,
+      {
+    required this.status,
+    this.compact = false,
+    Key? key,
+  }) : super(key: key);
+
+  // final int numberUnsyncedNote;
+  final SyncStatus status;
+  final bool compact;
+
+  // bool get _isSynced =>
+  //     status.connectivity == ConnectivityStatus.connected && numberUnsyncedNote == 0;
+
+  @override
+  Widget build(BuildContext context) {
+    // return compact
+    //     ? _buildSyncDot()
+    //     : Container(
+    //         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+    //         decoration: BoxDecoration(
+    //           borderRadius: BorderRadius.circular(10),
+    //           color: Colors.grey[700],
+    //         ),
+    //         child: Row(
+    //           children: [
+    //             _buildSyncDot(),
+    //             const SizedBox(width: 6),
+    //             Text(
+    //                 status == SyncStatus.syncing
+    //                     ? 'Syncing... ($numberUnsyncedNote)'
+    //                     // : _isSynced
+    //                     : numberUnsyncedNote == 0
+    //                         ? 'Synced'
+    //                         : 'Unsynced ($numberUnsyncedNote)',
+    //                 style: Theme.of(context).textTheme.caption),
+    //           ],
+    //         ),
+    //       );
+    return _buildSyncDot();
+  }
+
+  Widget _buildSyncDot() {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        // color: status == SyncStatus.syncing
+        //     ? Colors.yellow
+        //     // : _isSynced
+        //     : numberUnsyncedNote == 0
+        //         ? Colors.green
+        //         : Colors.red,
+        color: _getColor(),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.38),
+            blurRadius: 2,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getColor() {
+    switch (status) {
+      case SyncStatus.syncing:
+        return Colors.yellow;
+      case SyncStatus.synced:
+        return Colors.green;
+      case SyncStatus.unsynced:
+        return Colors.red;
+      case SyncStatus.offline:
+        return Colors.grey;
+    }
+  }
+}
